@@ -131,7 +131,7 @@
     <div class="cards">
       <div class="card card-cw">
         <div class="card-header">
-          <div class="card-name">cw</div>
+          <div class="card-name">채원</div>
           <div class="card-icon icon-cw">📈</div>
         </div>
         <div class="card-info">
@@ -152,7 +152,7 @@
 
       <div class="card card-dk">
         <div class="card-header">
-          <div class="card-name">dk</div>
+          <div class="card-name">도권</div>
           <div class="card-icon icon-dk">📈</div>
         </div>
         <div class="card-info">
@@ -192,8 +192,8 @@
           <label class="form-label">이름</label>
           <select id="name" class="form-select">
             <option value="">선택하세요</option>
-            <option value="cw">cw</option>
-            <option value="dk">dk</option>
+            <option value="cw">채원</option>
+            <option value="dk">도권</option>
           </select>
         </div>
         <div class="form-group">
@@ -236,8 +236,8 @@
         <div class="form-group">
           <label class="form-label">이름</label>
           <select id="edit-name" class="form-select">
-            <option value="cw">cw</option>
-            <option value="dk">dk</option>
+            <option value="cw">채원</option>
+            <option value="dk">도권</option>
           </select>
         </div>
         <div class="form-group">
@@ -270,6 +270,14 @@
     let currentMode = 'normal';
     let isParent = false;
     
+    // 이름 매핑 함수 추가
+    function getDisplayName(name) {
+      if (name === 'cw') return '채원';
+      if (name === 'dk') return '도권';
+      if (name === 'admin') return '부모님';
+      return name;
+    }
+
     window.onload = function() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('date').value = today;
@@ -322,11 +330,15 @@
         const sign = t.type === '입금' ? '+' : '-';
         const actionBadge = 'badge-pending';
         
+        // 표시용 이름 변환
+        const displayName = getDisplayName(t.name);
+        const displayRecorder = getDisplayName(t.recorder);
+
         html += `
           <tr>
             <td>${t.date}</td>
-            <td>${t.recorder}</td>
-            <td><span class="badge ${nameBadge}">${t.name}</span></td>
+            <td>${displayRecorder}</td>
+            <td><span class="badge ${nameBadge}">${displayName}</span></td>
             <td><span class="badge ${typeBadge}">${t.type}</span></td>
             <td class="amount">${sign}₩${formatNumber(t.amount)}</td>
             <td><span class="badge ${actionBadge}">${t.action}</span></td>
@@ -459,12 +471,15 @@
         const typeBadge = t.type === '입금' ? 'badge-deposit' : 'badge-withdraw';
         const amountClass = t.type === '입금' ? 'amount-deposit' : 'amount-withdraw';
         const sign = t.type === '입금' ? '+' : '-';
-        const recorder = t.recorder || '-';
+        // 표시용 이름 변환
+        const displayName = getDisplayName(t.name);
+        const displayRecorder = getDisplayName(t.recorder || '-');
+        
         const rowClass = currentMode === 'edit' ? 'editable' : (currentMode === 'delete' ? 'deletable' : '');
         
-        html += `<tr class="${rowClass}"><td>${t.date}</td><td><span class="badge ${nameBadge}">${t.name}</span></td>
+        html += `<tr class="${rowClass}"><td>${t.date}</td><td><span class="badge ${nameBadge}">${displayName}</span></td>
                  <td><span class="badge ${typeBadge}">${t.type}</span></td>
-                 <td class="amount ${amountClass}">${sign}₩${formatNumber(t.amount)}</td><td>${recorder}</td>`;
+                 <td class="amount ${amountClass}">${sign}₩${formatNumber(t.amount)}</td><td>${displayRecorder}</td>`;
         
         if (currentMode === 'edit') {
           html += `<td class="action-cell"><button class="action-btn btn-edit" onclick="editTransaction(${t.id}, '${t.name}', '${t.date}', '${t.type}', ${t.amount})">✓</button></td>`;
