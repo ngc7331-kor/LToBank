@@ -298,6 +298,12 @@
         })
         .checkIsParent();
     };
+
+    function getNameDisplay(name) {
+      if (name === 'cw') return '채원';
+      if (name === 'dk') return '도권';
+      return name;
+    }
     
     function loadPendingTransactions() {
       google.script.run
@@ -331,8 +337,8 @@
         const actionBadge = 'badge-pending';
         
         // 표시용 이름 변환
-        const displayName = getDisplayName(t.name);
-        const displayRecorder = getDisplayName(t.recorder);
+        const displayName = getNameDisplay(t.name);
+        const displayRecorder = getNameDisplay(t.recorder);
 
         html += `
           <tr>
@@ -472,8 +478,8 @@
         const amountClass = t.type === '입금' ? 'amount-deposit' : 'amount-withdraw';
         const sign = t.type === '입금' ? '+' : '-';
         // 표시용 이름 변환
-        const displayName = getDisplayName(t.name);
-        const displayRecorder = getDisplayName(t.recorder || '-');
+        const displayName = getNameDisplay(t.name);
+        const displayRecorder = getNameDisplay(t.recorder || '-');
         
         const rowClass = currentMode === 'edit' ? 'editable' : (currentMode === 'delete' ? 'deletable' : '');
         
