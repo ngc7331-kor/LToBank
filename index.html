@@ -23,13 +23,13 @@
     
     .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
     .card { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .card-chaewon { border-top: 4px solid #f472b6; }
-    .card-dokwon { border-top: 4px solid #60a5fa; }
+    .card-cw { border-top: 4px solid #f472b6; }
+    .card-dk { border-top: 4px solid #60a5fa; }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
     .card-name { font-size: 1.5rem; font-weight: bold; color: #1f2937; }
     .card-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-    .icon-chaewon { background: #fce7f3; color: #f472b6; }
-    .icon-dokwon { background: #dbeafe; color: #60a5fa; }
+    .icon-cw { background: #fce7f3; color: #f472b6; }
+    .icon-dk { background: #dbeafe; color: #60a5fa; }
     .card-info { display: flex; flex-direction: column; gap: 0.5rem; }
     .info-row { display: flex; justify-content: space-between; align-items: center; }
     .info-label { color: #6b7280; font-size: 0.9rem; }
@@ -38,8 +38,8 @@
     .info-total { border-top: 1px solid #e5e7eb; padding-top: 0.5rem; margin-top: 0.5rem; }
     .total-label { font-weight: 600; color: #374151; }
     .total-value { font-size: 1.5rem; font-weight: bold; }
-    .total-chaewon { color: #f472b6; }
-    .total-dokwon { color: #60a5fa; }
+    .total-cw { color: #f472b6; }
+    .total-dk { color: #60a5fa; }
     
     .form-card { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; }
     .form-title { font-size: 1.25rem; font-weight: bold; color: #1f2937; margin-bottom: 1rem; }
@@ -75,8 +75,8 @@
     tbody tr:hover { background: #f9fafb; }
     td { padding: 0.75rem 0.5rem; font-size: 0.875rem; }
     .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500; }
-    .badge-chaewon { background: #fce7f3; color: #be185d; }
-    .badge-dokwon { background: #dbeafe; color: #1e40af; }
+    .badge-cw { background: #fce7f3; color: #be185d; }
+    .badge-dk { background: #dbeafe; color: #1e40af; }
     .badge-deposit { background: #d1fae5; color: #065f46; }
     .badge-withdraw { background: #fee2e2; color: #991b1b; }
     .badge-pending { background: #fef3c7; color: #b45309; }
@@ -129,44 +129,44 @@
     </div>
 
     <div class="cards">
-      <div class="card card-chaewon">
+      <div class="card card-cw">
         <div class="card-header">
-          <div class="card-name">채원</div>
-          <div class="card-icon icon-chaewon">📈</div>
+          <div class="card-name">cw</div>
+          <div class="card-icon icon-cw">📈</div>
         </div>
         <div class="card-info">
           <div class="info-row">
             <span class="info-label">저축액</span>
-            <span class="info-value" id="chaewon-deposit">₩0</span>
+            <span class="info-value" id="cw-deposit">₩0</span>
           </div>
           <div class="info-row">
             <span class="info-label">이자</span>
-            <span class="info-value info-interest" id="chaewon-interest">+₩0</span>
+            <span class="info-value info-interest" id="cw-interest">+₩0</span>
           </div>
           <div class="info-row info-total">
             <span class="total-label">총액</span>
-            <span class="total-value total-chaewon" id="chaewon-total">₩0</span>
+            <span class="total-value total-cw" id="cw-total">₩0</span>
           </div>
         </div>
       </div>
 
-      <div class="card card-dokwon">
+      <div class="card card-dk">
         <div class="card-header">
-          <div class="card-name">도권</div>
-          <div class="card-icon icon-dokwon">📈</div>
+          <div class="card-name">dk</div>
+          <div class="card-icon icon-dk">📈</div>
         </div>
         <div class="card-info">
           <div class="info-row">
             <span class="info-label">저축액</span>
-            <span class="info-value" id="dokwon-deposit">₩0</span>
+            <span class="info-value" id="dk-deposit">₩0</span>
           </div>
           <div class="info-row">
             <span class="info-label">이자</span>
-            <span class="info-value info-interest" id="dokwon-interest">+₩0</span>
+            <span class="info-value info-interest" id="dk-interest">+₩0</span>
           </div>
           <div class="info-row info-total">
             <span class="total-label">총액</span>
-            <span class="total-value total-dokwon" id="dokwon-total">₩0</span>
+            <span class="total-value total-dk" id="dk-total">₩0</span>
           </div>
         </div>
       </div>
@@ -192,8 +192,8 @@
           <label class="form-label">이름</label>
           <select id="name" class="form-select">
             <option value="">선택하세요</option>
-            <option value="채원">채원</option>
-            <option value="도권">도권</option>
+            <option value="cw">cw</option>
+            <option value="dk">dk</option>
           </select>
         </div>
         <div class="form-group">
@@ -236,8 +236,8 @@
         <div class="form-group">
           <label class="form-label">이름</label>
           <select id="edit-name" class="form-select">
-            <option value="채원">채원</option>
-            <option value="도권">도권</option>
+            <option value="cw">cw</option>
+            <option value="dk">dk</option>
           </select>
         </div>
         <div class="form-group">
@@ -317,7 +317,7 @@
       let html = '<table><thead><tr><th>날짜</th><th>기록자</th><th>대상</th><th>구분</th><th>금액</th><th>작업</th><th>승인</th></tr></thead><tbody>';
       
       pendingTransactions.forEach(t => {
-        const nameBadge = t.name === '채원' ? 'badge-chaewon' : 'badge-dokwon';
+        const nameBadge = t.name === 'cw' ? 'badge-cw' : 'badge-dk';
         const typeBadge = t.type === '입금' ? 'badge-deposit' : 'badge-withdraw';
         const sign = t.type === '입금' ? '+' : '-';
         const actionBadge = 'badge-pending';
@@ -392,20 +392,20 @@
       google.script.run
         .withSuccessHandler(function(data) {
           const interest = calculateInterestFromTransactions(data.transactions);
-          document.getElementById('chaewon-deposit').textContent = '₩' + formatNumber(data.deposit);
-          document.getElementById('chaewon-interest').textContent = '+₩' + formatNumber(interest);
-          document.getElementById('chaewon-total').textContent = '₩' + formatNumber(data.deposit + interest);
+          document.getElementById('cw-deposit').textContent = '₩' + formatNumber(data.deposit);
+          document.getElementById('cw-interest').textContent = '+₩' + formatNumber(interest);
+          document.getElementById('cw-total').textContent = '₩' + formatNumber(data.deposit + interest);
         })
-        .getPersonalSheetData('채원');
+        .getPersonalSheetData('cw');
       
       google.script.run
         .withSuccessHandler(function(data) {
           const interest = calculateInterestFromTransactions(data.transactions);
-          document.getElementById('dokwon-deposit').textContent = '₩' + formatNumber(data.deposit);
-          document.getElementById('dokwon-interest').textContent = '+₩' + formatNumber(interest);
-          document.getElementById('dokwon-total').textContent = '₩' + formatNumber(data.deposit + interest);
+          document.getElementById('dk-deposit').textContent = '₩' + formatNumber(data.deposit);
+          document.getElementById('dk-interest').textContent = '+₩' + formatNumber(interest);
+          document.getElementById('dk-total').textContent = '₩' + formatNumber(data.deposit + interest);
         })
-        .getPersonalSheetData('도권');
+        .getPersonalSheetData('dk');
     }
     
     function calculateInterestFromTransactions(txs) {
@@ -455,7 +455,7 @@
       html += '</tr></thead><tbody>';
       
       recent.forEach(t => {
-        const nameBadge = t.name === '채원' ? 'badge-chaewon' : 'badge-dokwon';
+        const nameBadge = t.name === 'cw' ? 'badge-cw' : 'badge-dk';
         const typeBadge = t.type === '입금' ? 'badge-deposit' : 'badge-withdraw';
         const amountClass = t.type === '입금' ? 'amount-deposit' : 'amount-withdraw';
         const sign = t.type === '입금' ? '+' : '-';

@@ -1,40 +1,70 @@
-```javascript
 // ============================================
 // code.gs - Google Apps Script 백엔드 코드
 // ============================================
 
-// 허용된 이메일 리스트
-// [보안] 깃허브 공개를 위해 이메일을 가렸습니다.
-// 실제 배포 시에는 아래 주소를 '진짜 이메일'로 꼭 수정해주세요!
-const ALLOWED_EMAILS = [
-  'mom_dad@gmail.com',      // 부모님 이메일 (수정 필요)
-  'daughter@gmail.com',     // 채원 이메일 (수정 필요)
-  'son@gmail.com'           // 도권 이메일 (수정 필요)
-];
+// 🔒 보안 설정: 이메일 가져오기
+function getFamilyEmails() {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  const parentEmail = scriptProperties.getProperty("PICK_PARENT_EMAIL");
+  const cwEmail = scriptProperties.getProperty("PICK_CW_EMAIL");
+  const dkEmail = scriptProperties.getProperty("PICK_DK_EMAIL");
 
-const PARENT_EMAIL = 'mom_dad@gmail.com'; // 부모님 이메일 (수정 필요)
+  if (!parentEmail || !cwEmail || !dkEmail) {
+    Logger.log(
+      "⚠️ 경고: 이메일 설정이 완료되지 않았습니다. setupScriptProperties()를 실행해주세요.",
+    );
+  }
 
-// 이메일을 이름으로 변환
-// 이메일을 이름으로 변환
+  return {
+    parent: parentEmail,
+    cw: cwEmail,
+    dk: dkEmail,
+  };
+}
+
+// ⚙️ 초기 설정 (배포 전 1회 실행 필수)
+function setupScriptProperties() {
+  const scriptProperties = PropertiesService.getScriptProperties();
+
+  // 👇 아래에 실제 가족 이메일 주소를 입력하세요.
+  const REAL_EMAILS = {
+    PICK_PARENT_EMAIL: "아빠_실제_이메일@gmail.com",
+    PICK_CW_EMAIL: "cw_실제_이메일@gmail.com",
+    PICK_DK_EMAIL: "dk_실제_이메일@gmail.com",
+  };
+
+  scriptProperties.setProperties(REAL_EMAILS);
+  Logger.log("✅ 이메일 설정이 완료되었습니다! 이제 앱이 정상 작동합니다.");
+}
+
+// 이메일을 이름(ID)으로 변환
 function getNameFromEmail(email) {
-  // 위에서 설정한 이메일 순서대로 이름을 매핑합니다.
-  if (email === ALLOWED_EMAILS[0]) return '아빠';
-  if (email === ALLOWED_EMAILS[1]) return '채원';
-  if (email === ALLOWED_EMAILS[2]) return '도권';
+  const emails = getFamilyEmails();
+  if (email === emails.parent) return "admin";
+  if (email === emails.cw) return "cw";
+  if (email === emails.dk) return "dk";
   return email;
 }
 
-// 현재 사용자가 부모인지 확인
+// 현재 사용자가 부모(admin)인지 확인
 function isParent() {
   const userEmail = Session.getActiveUser().getEmail();
-  return userEmail === PARENT_EMAIL;
+  const emails = getFamilyEmails();
+  return userEmail === emails.parent;
+}
+
+// 접근 권한 확인
+function checkPermission(userEmail) {
+  const emails = getFamilyEmails();
+  const allowed = [emails.parent, emails.cw, emails.dk];
+  return allowed.includes(userEmail);
 }
 
 // 웹앱 접근 시 실행
 function doGet() {
   const userEmail = Session.getActiveUser().getEmail();
 
-  if (!ALLOWED_EMAILS.includes(userEmail)) {
+  if (!checkPermission(userEmail)) {
     return HtmlService.createHtmlOutput(
       "접근 권한이 없습니다. 허용된 계정으로 로그인해주세요.",
     );
@@ -47,6 +77,11 @@ function doGet() {
 
 // 이메일 알림 발송
 function sendEmailNotification(action, transaction, recorderName) {
+  const emails = getFamilyEmails();
+  const parentEmail = emails.parent;
+
+  if (!parentEmail) return;
+
   const subject = `[L.To Bank] ${recorderName}님이 ${action} 요청`;
   const actionText =
     action === "등록"
@@ -73,7 +108,7 @@ ${recorderName}님이 ${actionText}.
   `;
 
   try {
-    MailApp.sendEmail(PARENT_EMAIL, subject, body);
+    MailApp.sendEmail(parentEmail, subject, body);
   } catch (error) {
     console.log("이메일 발송 실패:", error);
   }
@@ -82,7 +117,7 @@ ${recorderName}님이 ${actionText}.
 // 거래 내역 가져오기 (승인된 것만)
 function getTransactions() {
   const userEmail = Session.getActiveUser().getEmail();
-  if (!ALLOWED_EMAILS.includes(userEmail)) {
+  if (!checkPermission(userEmail)) {
     throw new Error("접근 권한이 없습니다.");
   }
 
@@ -110,15 +145,6 @@ function getTransactions() {
           type: data[i][3],
           amount: Number(data[i][4]) || 0,
         });
-      } else {
-        transactions.push({
-          id: i,
-          date: formatDate(data[i][0]),
-          recorder: "",
-          name: data[i][1],
-          type: data[i][2],
-          amount: Number(data[i][3]) || 0,
-        });
       }
     }
   }
@@ -128,8 +154,7 @@ function getTransactions() {
 
 // 승인 대기중인 거래 가져오기 (부모만)
 function getPendingTransactions() {
-  const userEmail = Session.getActiveUser().getEmail();
-  if (userEmail !== PARENT_EMAIL) {
+  if (!isParent()) {
     return [];
   }
 
@@ -161,8 +186,7 @@ function getPendingTransactions() {
 
 // 거래 승인 (부모만)
 function approveTransaction(rowId) {
-  const userEmail = Session.getActiveUser().getEmail();
-  if (userEmail !== PARENT_EMAIL) {
+  if (!isParent()) {
     throw new Error("승인 권한이 없습니다.");
   }
 
@@ -181,10 +205,13 @@ function approveTransaction(rowId) {
 
   // 승인 상태 업데이트
   recordSheet.getRange(rowId + 1, 7).setValue("승인됨"); // G열
-  recordSheet.getRange(rowId + 1, 8).setValue("아빠"); // H열: 승인자
+  recordSheet.getRange(rowId + 1, 8).setValue("admin"); // H열: 승인자
   recordSheet.getRange(rowId + 1, 9).setValue(new Date()); // I열: 승인일시
 
   // 개인 시트에 실제 반영
+  // 개인 시트에 실제 반영
+  // 주의: 실제 구글 스프레드시트의 시트 이름도 'cw', 'dk'로 변경해야 작동합니다.
+
   const personalSheet = ss.getSheetByName(transaction.name);
 
   if (action === "입력") {
@@ -221,8 +248,7 @@ function approveTransaction(rowId) {
 
 // 거래 거절 (부모만)
 function rejectTransaction(rowId) {
-  const userEmail = Session.getActiveUser().getEmail();
-  if (userEmail !== PARENT_EMAIL) {
+  if (!isParent()) {
     throw new Error("거절 권한이 없습니다.");
   }
 
@@ -231,7 +257,7 @@ function rejectTransaction(rowId) {
 
   // 승인 상태 업데이트
   recordSheet.getRange(rowId + 1, 7).setValue("거절됨"); // G열
-  recordSheet.getRange(rowId + 1, 8).setValue("아빠"); // H열: 승인자
+  recordSheet.getRange(rowId + 1, 8).setValue("admin"); // H열: 승인자
   recordSheet.getRange(rowId + 1, 9).setValue(new Date()); // I열: 승인일시
 
   return { success: true };
@@ -275,13 +301,13 @@ function getPersonalSheetData(name) {
 // 새 거래 추가
 function addTransaction(transaction) {
   const userEmail = Session.getActiveUser().getEmail();
-  if (!ALLOWED_EMAILS.includes(userEmail)) {
+  if (!checkPermission(userEmail)) {
     throw new Error("접근 권한이 없습니다.");
   }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const recorderName = getNameFromEmail(userEmail);
-  const needsApproval = userEmail !== PARENT_EMAIL;
+  const needsApproval = !isParent();
 
   // 기록자 시트에 추가
   const recordSheet = ss.getSheetByName("기록자");
@@ -289,12 +315,12 @@ function addTransaction(transaction) {
     recordSheet.appendRow([
       transaction.date, // A열: 날짜
       recorderName, // B열: 기록자
-      transaction.name, // C열: 이름
+      transaction.name, // C열: 이름 (cw/dk)
       transaction.type, // D열: 구분
       transaction.amount, // E열: 금액
       "입력", // F열: 상태
       needsApproval ? "대기중" : "승인됨", // G열: 승인상태
-      needsApproval ? "" : "아빠", // H열: 승인자
+      needsApproval ? "" : "admin", // H열: 승인자
       needsApproval ? "" : new Date(), // I열: 승인일시
     ]);
   }
@@ -336,14 +362,14 @@ function addTransaction(transaction) {
 // 거래 수정
 function updateTransaction(rowId, transaction) {
   const userEmail = Session.getActiveUser().getEmail();
-  if (!ALLOWED_EMAILS.includes(userEmail)) {
+  if (!checkPermission(userEmail)) {
     throw new Error("접근 권한이 없습니다.");
   }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const recordSheet = ss.getSheetByName("기록자");
   const recorderName = getNameFromEmail(userEmail);
-  const needsApproval = userEmail !== PARENT_EMAIL;
+  const needsApproval = !isParent();
 
   const oldData = recordSheet.getRange(rowId + 1, 1, 1, 5).getValues()[0];
   const oldName = oldData[2];
@@ -403,7 +429,7 @@ function updateTransaction(rowId, transaction) {
     transaction.amount,
     "수정",
     "승인됨",
-    "아빠",
+    "admin",
     new Date(),
   ]);
 
@@ -413,14 +439,14 @@ function updateTransaction(rowId, transaction) {
 // 거래 삭제
 function deleteTransaction(rowId) {
   const userEmail = Session.getActiveUser().getEmail();
-  if (!ALLOWED_EMAILS.includes(userEmail)) {
+  if (!checkPermission(userEmail)) {
     throw new Error("접근 권한이 없습니다.");
   }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const recordSheet = ss.getSheetByName("기록자");
   const recorderName = getNameFromEmail(userEmail);
-  const needsApproval = userEmail !== PARENT_EMAIL;
+  const needsApproval = !isParent();
 
   const row = recordSheet.getRange(rowId + 1, 1, 1, 5).getValues()[0];
   const name = row[2];
@@ -473,7 +499,7 @@ function deleteTransaction(rowId) {
     row[4],
     "삭제",
     "승인됨",
-    "아빠",
+    "admin",
     new Date(),
   ]);
 
