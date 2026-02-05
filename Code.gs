@@ -1,21 +1,26 @@
+```javascript
 // ============================================
 // code.gs - Google Apps Script 백엔드 코드
 // ============================================
 
 // 허용된 이메일 리스트
+// [보안] 깃허브 공개를 위해 이메일을 가렸습니다.
+// 실제 배포 시에는 아래 주소를 '진짜 이메일'로 꼭 수정해주세요!
 const ALLOWED_EMAILS = [
-  "father@example.com", // 부모님 이메일
-  "chaewon@example.com", // 채원 이메일
-  "dokwon@example.com", // 도권 이메일
+  'mom_dad@gmail.com',      // 부모님 이메일 (수정 필요)
+  'daughter@gmail.com',     // 채원 이메일 (수정 필요)
+  'son@gmail.com'           // 도권 이메일 (수정 필요)
 ];
 
-const PARENT_EMAIL = "father@example.com";
+const PARENT_EMAIL = 'mom_dad@gmail.com'; // 부모님 이메일 (수정 필요)
 
 // 이메일을 이름으로 변환
+// 이메일을 이름으로 변환
 function getNameFromEmail(email) {
-  if (email === "father@example.com") return "아빠";
-  if (email === "chaewon@example.com") return "채원";
-  if (email === "dokwon@example.com") return "도권";
+  // 위에서 설정한 이메일 순서대로 이름을 매핑합니다.
+  if (email === ALLOWED_EMAILS[0]) return '아빠';
+  if (email === ALLOWED_EMAILS[1]) return '채원';
+  if (email === ALLOWED_EMAILS[2]) return '도권';
   return email;
 }
 
