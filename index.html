@@ -5,6 +5,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>L.To Bank</title>
+  
+  <!-- PWA & Mobile Support -->
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="https://ngc7331-kor.github.io/LToBank/manifest.json">
+  <link rel="icon" href="https://ngc7331-kor.github.io/LToBank/app-icon.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="https://ngc7331-kor.github.io/LToBank/app-icon.jpg">
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -116,6 +125,25 @@
       table { font-size: 0.75rem; }
       th, td { padding: 0.5rem 0.25rem; }
     }
+
+    /* Install Button Style */
+    .install-btn {
+      margin-top: 15px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .install-btn:active { transform: scale(0.95); }
   </style>
 </head>
 <body>
@@ -126,6 +154,11 @@
         <h1>L.To Bank</h1>
       </div>
       <p class="subtitle">특별한 저축통장 (연 3.1%)</p>
+      
+      <!-- PWA Install Button -->
+      <button id="installAppBtn" class="install-btn" style="display: none;">
+        📥 앱 설치하기
+      </button>
     </div>
 
     <div class="cards">
@@ -269,6 +302,26 @@
     let editingRowId = null;
     let currentMode = 'normal';
     let isParent = false;
+    let deferredPrompt;
+
+    // PWA Install Prompt Logic
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('installAppBtn');
+      if (installBtn) {
+        installBtn.style.display = 'inline-flex';
+      }
+    });
+
+    document.getElementById('installAppBtn')?.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      deferredPrompt = null;
+      document.getElementById('installAppBtn').style.display = 'none';
+    });
     
     // 이름 매핑 함수 추가
     function getDisplayName(name) {
