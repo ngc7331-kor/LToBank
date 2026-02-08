@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>L.To Bank</title>
     
-    <!-- iOS 홈 화면 아이콘 설정 -->
+    <!-- iOS 홈 화면 아이콘 설정 (중요) -->
     <link rel="apple-touch-icon" href="app-icon.jpg">
     <link rel="icon" href="app-icon.jpg">
     
@@ -15,35 +15,45 @@
     <meta name="apple-mobile-web-app-title" content="L.To Bank">
     
     <style>
-        body, html {
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
             background-color: #f3f4f6;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: #6b7280;
-            font-size: 1.2rem;
             text-align: center;
-            z-index: -1;
         }
+        .container {
+            padding: 20px;
+        }
+        h2 { color: #4b5563; }
+        p { color: #6b7280; font-size: 0.9rem; }
     </style>
+
+    <script>
+        // 👇 아래 주소를 실제 앱스스크립트 배포 주소(Exec URL)로 변경하세요
+        const GAS_APP_URL = "YOUR_GAS_APP_URL_HERE";
+
+        function redirect() {
+            if (GAS_APP_URL === "YOUR_GAS_APP_URL_HERE") {
+                document.body.innerHTML = "<h2>설정 필요</h2><p>index.html 파일에서<br>GAS_APP_URL을 수정해주세요.</p>";
+                return;
+            }
+            // 현재 페이지를 대체하여 이동 (뒤로가기 방지)
+            window.location.replace(GAS_APP_URL);
+        }
+
+        window.onload = function() {
+            setTimeout(redirect, 100); // 0.1초 후 이동
+        };
+    </script>
 </head>
 <body>
-    <div class="loading">앱을 불러오는 중...</div>
-    <!-- 👇 아래 src 주소를 실제 앱스스크립트 배포 주소(Exec URL)로 변경하세요 -->
-    <iframe src="YOUR_GAS_APP_URL_HERE"></iframe>
+    <div class="container">
+        <h2>L.To Bank</h2>
+        <p>앱을 실행하는 중입니다...</p>
+    </div>
 </body>
 </html>
