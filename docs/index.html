@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>L.To Bank</title>
+    
+    <!-- iOS 홈 화면 아이콘 설정 -->
+    <link rel="apple-touch-icon" href="app-icon.jpg">
+    <link rel="icon" href="app-icon.jpg">
+    
+    <!-- iOS 웹 앱 설정 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="L.To Bank">
+    
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f3f4f6;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #6b7280;
+            font-size: 1.2rem;
+            text-align: center;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">앱을 불러오는 중...</div>
+    <!-- 👇 아래 src 주소를 실제 앱스스크립트 배포 주소(Exec URL)로 변경하세요 -->
+    <iframe src="YOUR_GAS_APP_URL_HERE"></iframe>
+</body>
+</html>
