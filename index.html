@@ -297,6 +297,18 @@
   </div>
 
   <script>
+    // GitHub Pages에서 직접 접속 시 차단 (보안 강화)
+    if (window.location.hostname.includes('github.io')) {
+      document.body.innerHTML = `
+        <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;text-align:center;font-family:sans-serif;">
+          <h2 style="color:#ef4444;">⛔ 접근 권한이 없습니다</h2>
+          <p>이 페이지는 정적 파일이며, 보안상 기능을 제공하지 않습니다.</p>
+          <p><strong>앱스스크립트(Google Apps Script) 주소</strong>로 접속해주세요.</p>
+        </div>
+      `;
+      throw new Error('GitHub Pages Access Blocked');
+    }
+
     let transactions = [];
     let pendingTransactions = [];
     let editingRowId = null;
