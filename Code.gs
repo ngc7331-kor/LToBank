@@ -62,17 +62,10 @@ function checkPermission(userEmail) {
 
 // 웹앱 접근 시 실행
 function doGet() {
-  const userEmail = Session.getActiveUser().getEmail();
-
-  if (!checkPermission(userEmail)) {
-    return HtmlService.createHtmlOutput(
-      "접근 권한이 없습니다. 허용된 계정으로 로그인해주세요.",
-    );
-  }
-
   return HtmlService.createHtmlOutputFromFile("index")
     .setTitle("L.To Bank")
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 // 이메일 알림 발송
@@ -148,6 +141,14 @@ function getTransactions() {
       }
     }
   }
+
+  // 날짜 기준 오름차순 정렬 (과거 -> 최신)
+  // (프론트엔드에서 최근 10개를 뒤에서 잘라 역순으로 보여주기 때문)
+  transactions.sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateA - dateB || a.id - b.id;
+  });
 
   return transactions;
 }
