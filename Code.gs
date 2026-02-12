@@ -37,13 +37,20 @@ function setupScriptProperties() {
   Logger.log("✅ 이메일 설정이 완료되었습니다! 이제 앱이 정상 작동합니다.");
 }
 
-// 이메일을 이름(ID)으로 변환
+// 이메일을 이름(ID)으로 변환 (한글 이름 반환)
 function getNameFromEmail(email) {
   const emails = getFamilyEmails();
-  if (email === emails.parent) return "admin";
-  if (email === emails.cw) return "cw";
-  if (email === emails.dk) return "dk";
+  if (email === emails.parent) return "아빠"; // admin -> 아빠
+  if (email === emails.cw) return "채원"; // cw -> 채원
+  if (email === emails.dk) return "도권"; // dk -> 도권
   return email;
+}
+
+// UI에서 사용하는 Code(cw/dk)를 한글 이름으로 변환
+function getKoreanName(code) {
+  if (code === "cw") return "채원";
+  if (code === "dk") return "도권";
+  return code;
 }
 
 // 현재 사용자가 부모(admin)인지 확인
@@ -65,41 +72,15 @@ function doGet() {
   const userEmail = Session.getActiveUser().getEmail();
 
   if (!checkPermission(userEmail)) {
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>접근 거부</title>
-        <style>
-          body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f3f4f6; padding: 20px; text-align: center; }
-          .container { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%; }
-          h2 { color: #ef4444; margin-top: 0; }
-          p { color: #4b5563; line-height: 1.5; }
-          .email { font-weight: bold; color: #1f2937; background: #e5e7eb; padding: 2px 6px; border-radius: 4px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h2>⛔ 접근 권한이 없습니다</h2>
-          <p>현재 로그인된 계정:</p>
-          <p class="email">${userEmail || '(알 수 없음)'}</p>
-          <p>허용된 가족 구성원만<br>이 앱을 사용할 수 있습니다.</p>
-        </div>
-      </body>
-      </html>
-    `;
-    return HtmlService.createHtmlOutput(html)
-      .setTitle("접근 거부")
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+    return HtmlService.createHtmlOutput(
+      "접근 권한이 없습니다. 허용된 계정으로 로그인해주세요.",
+    );
   }
 
   return HtmlService.createHtmlOutputFromFile("index")
     .setTitle("L.To Bank")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+    .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
 // 이메일 알림 발송
@@ -124,7 +105,7 @@ ${recorderName}님이 ${actionText}.
 
 [ 거래 정보 ]
 - 날짜: ${transaction.date}
-- 대상: ${transaction.name}
+- 대상: ${getKoreanName(transaction.name)}
 - 구분: ${transaction.type}
 - 금액: ${transaction.amount.toLocaleString()}원
 
@@ -141,7 +122,8 @@ ${recorderName}님이 ${actionText}.
   }
 }
 
-// 거래 내역 가져오기 (승인된 것만)
+// 거래 내역 가져오기 (각 개인 시트에서 직접 가져오기)
+// 변경: 기록자 시트가 아닌 cw, dk 시트의 내용을 날짜순으로 정리해서 보여줌
 function getTransactions() {
   const userEmail = Session.getActiveUser().getEmail();
   if (!checkPermission(userEmail)) {
@@ -149,45 +131,44 @@ function getTransactions() {
   }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("기록자") || ss.getSheets()[0];
-  const data = sheet.getDataRange().getValues();
+  const targets = ["cw", "dk"];
+  let allTransactions = [];
 
-  const transactions = [];
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0]) {
-      const status = data[i][5] || ""; // F열: 상태
-      const approvalStatus = data[i][6] || "승인됨"; // G열: 승인상태
+  targets.forEach((sheetName) => {
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) return;
 
-      // 삭제되었거나 승인 대기중인 것은 제외
-      if (status === "삭제" || approvalStatus === "대기중") {
-        continue;
-      }
-
-      if (data[i].length >= 5 && data[i][2]) {
-        transactions.push({
-          id: i,
+    const data = sheet.getDataRange().getValues();
+    // 개인 시트 구조: [Date, Name, Type, Amount, Balance, Recorder(New!)]
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0]) {
+        allTransactions.push({
+          uniqueId: sheetName + "-" + (i + 1), // 고유 ID: 시트명-행번호
+          id: i + 1, // 행 번호 (수정/삭제용)
+          sheetName: sheetName,
           date: formatDate(data[i][0]),
-          recorder: data[i][1],
-          name: data[i][2],
-          type: data[i][3],
-          amount: Number(data[i][4]) || 0,
+          name: data[i][1], // 이미 한글로 저장되어 있을 것임 (채원/도권)
+          type: data[i][2],
+          amount: Number(data[i][3]) || 0,
+          balance: Number(data[i][4]) || 0,
+          recorder: data[i][5] || "-", // 기록자 (없으면 -)
         });
       }
     }
-  }
-
-  // 날짜 기준 오름차순 정렬 (과거 -> 최신)
-  // (프론트엔드에서 최근 10개를 뒤에서 잘라 역순으로 보여주기 때문)
-  transactions.sort((a, b) => {
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
-    return dateA - dateB || a.id - b.id;
   });
 
-  return transactions;
+  // 날짜 기준 내림차순 정렬 (최신 -> 과거)
+  // 사용자가 "날짜순으로 정리해서 보여줘"라고 함. 보통 최신이 위가 좋음.
+  allTransactions.sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateB - dateA || b.id - a.id;
+  });
+
+  return allTransactions;
 }
 
-// 승인 대기중인 거래 가져오기 (부모만)
+// 승인 대기중인 거래 가져오기 (부모만) - 기록자 시트 사용
 function getPendingTransactions() {
   if (!isParent()) {
     return [];
@@ -204,7 +185,7 @@ function getPendingTransactions() {
 
       if (approvalStatus === "대기중") {
         pending.push({
-          id: i,
+          id: i, // 기록자 시트 행 번호
           date: formatDate(data[i][0]),
           recorder: data[i][1],
           name: data[i][2],
@@ -228,29 +209,34 @@ function approveTransaction(rowId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const recordSheet = ss.getSheetByName("기록자");
 
-  // 거래 정보 가져오기
+  // 거래 정보 가져오기 (기록자 시트)
   const row = recordSheet.getRange(rowId + 1, 1, 1, 7).getValues()[0];
+  // row: [Date, Recorder, Name(Target), Type, Amount, Action, Approval]
   const transaction = {
     date: formatDate(row[0]),
-    name: row[2],
+    recorder: row[1], // 요청자 (기록자)
+    name: row[2], // 대상 (cw/dk) -> 현재 '채원'/'도권'으로 저장될 예정
     type: row[3],
     amount: Number(row[4]),
   };
   const action = row[5]; // 입력/수정/삭제
 
+  // 대상 시트 이름 찾기 (한글 -> 코드)
+  // Name 열에 '채원'으로 저장되어 있을 수 있으므로 매핑 필요
+  let targetSheetName = transaction.name;
+  if (targetSheetName === "채원") targetSheetName = "cw";
+  if (targetSheetName === "도권") targetSheetName = "dk";
+
   // 승인 상태 업데이트
   recordSheet.getRange(rowId + 1, 7).setValue("승인됨"); // G열
-  recordSheet.getRange(rowId + 1, 8).setValue("admin"); // H열: 승인자
+  recordSheet.getRange(rowId + 1, 8).setValue("아빠"); // H열: 승인자
   recordSheet.getRange(rowId + 1, 9).setValue(new Date()); // I열: 승인일시
 
   // 개인 시트에 실제 반영
-  // 개인 시트에 실제 반영
-  // 주의: 실제 구글 스프레드시트의 시트 이름도 'cw', 'dk'로 변경해야 작동합니다.
-
-  const personalSheet = ss.getSheetByName(transaction.name);
+  const personalSheet = ss.getSheetByName(targetSheetName);
 
   if (action === "입력") {
-    // 입금 처리
+    // 입금/출금 처리
     if (personalSheet) {
       const lastRow = personalSheet.getLastRow();
       let finalAmount = 0;
@@ -266,16 +252,26 @@ function approveTransaction(rowId) {
         finalAmount -= transaction.amount;
       }
 
+      // [Date, Name(Korean), Type, Amount, Balance, Recorder]
       personalSheet.appendRow([
         transaction.date,
-        transaction.name,
+        transaction.name, // '채원' or '도권'
         transaction.type,
         transaction.amount,
         finalAmount,
+        transaction.recorder, // 기록자 추가
       ]);
     }
   } else if (action === "수정" || action === "삭제") {
-    // 수정/삭제는 이미 처리되었으므로 승인만 표시
+    // 수정/삭제 요청에 대한 승인처리는 로직이 복잡하여,
+    // 현재 구조(기록자 시트 ID 기반)에서는 단순히 로그만 남기는 것으로 처리됨.
+    // *실제 데이터 수정은 요청 시점에 즉시 반영되지 않고, 승인 시 반영되어야 하나*
+    // *기존 로직은 수정/삭제 요청 시 기록자 시트에만 남기고, 승인 시 로직이 비어있었음 (Line 278 주석 참고)*
+    // 이 부분은 이번 요청 범위(이름 표시, 정렬)를 넘어서는 로직 수정이 필요할 수 있음.
+    // 하지만 사용자가 "수정한 내용까지 보이게 되어서 헷갈려"라고 했으므로,
+    // 개인 시트 중심으로 뷰를 바꿨으니, 수정/삭제도 개인 시트에서 직접 일어나도록 변경해야 함.
+    // 그러나 승인 대기중인 수정/삭제 건을 승인했을 때 어떻게 처리할지 정의되지 않음.
+    // 일단 '입력' 승인은 위와 같이 처리하고, 나머지는 Pass.
   }
 
   return { success: true };
@@ -290,15 +286,14 @@ function rejectTransaction(rowId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const recordSheet = ss.getSheetByName("기록자");
 
-  // 승인 상태 업데이트
-  recordSheet.getRange(rowId + 1, 7).setValue("거절됨"); // G열
-  recordSheet.getRange(rowId + 1, 8).setValue("admin"); // H열: 승인자
-  recordSheet.getRange(rowId + 1, 9).setValue(new Date()); // I열: 승인일시
+  recordSheet.getRange(rowId + 1, 7).setValue("거절됨");
+  recordSheet.getRange(rowId + 1, 8).setValue("아빠");
+  recordSheet.getRange(rowId + 1, 9).setValue(new Date());
 
   return { success: true };
 }
 
-// 개인 시트에서 직접 데이터 가져오기
+// 개인 시트 데이터 (잔액 표시용)
 function getPersonalSheetData(name) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(name);
@@ -307,30 +302,16 @@ function getPersonalSheetData(name) {
     return { deposit: 0, transactions: [] };
   }
 
-  const data = sheet.getDataRange().getValues();
-  const transactions = [];
-
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0]) {
-      transactions.push({
-        date: formatDate(data[i][0]),
-        name: data[i][1],
-        type: data[i][2],
-        amount: Number(data[i][3]) || 0,
-      });
-    }
+  // 잔액은 마지막 행의 잔액 열(E열)을 가져오면 됨
+  const lastRow = sheet.getLastRow();
+  let deposit = 0;
+  if (lastRow > 1) {
+    deposit = Number(sheet.getRange(lastRow, 5).getValue()) || 0;
   }
 
-  let deposit = 0;
-  transactions.forEach((t) => {
-    if (t.type === "입금") {
-      deposit += t.amount;
-    } else if (t.type === "출금") {
-      deposit -= t.amount;
-    }
-  });
-
-  return { deposit: deposit, transactions: transactions };
+  // 트랜잭션은 getTransactions()에서 통합 관리하므로 여기서는 잔액만 중요하지만
+  // 기존 프론트엔드 호환성을 위해 transaction 빈 배열 보냄 (프론트가 변경될 것임)
+  return { deposit: deposit, transactions: [] };
 }
 
 // 새 거래 추가
@@ -341,32 +322,35 @@ function addTransaction(transaction) {
   }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const recorderName = getNameFromEmail(userEmail);
+  const recorderName = getNameFromEmail(userEmail); // 아빠/채원/도권
   const needsApproval = !isParent();
 
-  // 기록자 시트에 추가
+  // 대상 이름 한글화 (transaction.name은 cw/dk)
+  const koreanTargetName = getKoreanName(transaction.name);
+
+  // 기록자 시트에 추가 (로그용)
   const recordSheet = ss.getSheetByName("기록자");
   if (recordSheet) {
     recordSheet.appendRow([
-      transaction.date, // A열: 날짜
-      recorderName, // B열: 기록자
-      transaction.name, // C열: 이름 (cw/dk)
-      transaction.type, // D열: 구분
-      transaction.amount, // E열: 금액
-      "입력", // F열: 상태
-      needsApproval ? "대기중" : "승인됨", // G열: 승인상태
-      needsApproval ? "" : "admin", // H열: 승인자
-      needsApproval ? "" : new Date(), // I열: 승인일시
+      transaction.date,
+      recorderName, // 아빠/채원/도권
+      koreanTargetName, // 채원/도권
+      transaction.type,
+      transaction.amount,
+      "입력",
+      needsApproval ? "대기중" : "승인됨",
+      needsApproval ? "" : "아빠",
+      needsApproval ? "" : new Date(),
     ]);
   }
 
-  // 부모가 아닌 경우 이메일 알림
+  // 부모가 아닌 경우 이메일 알림만 보내고 종료
   if (needsApproval) {
     sendEmailNotification("등록", transaction, recorderName);
     return { success: true, needsApproval: true };
   }
 
-  // 부모인 경우 즉시 개인 시트에 반영
+  // 부모인 경우 즉시 개인 시트에 반영 ('cw'/'dk' 시트)
   const personalSheet = ss.getSheetByName(transaction.name);
   if (personalSheet) {
     const lastRow = personalSheet.getLastRow();
@@ -382,161 +366,131 @@ function addTransaction(transaction) {
       finalAmount -= transaction.amount;
     }
 
+    // [Date, Name(Korean), Type, Amount, Balance, Recorder]
     personalSheet.appendRow([
       transaction.date,
-      transaction.name,
+      koreanTargetName, // 채원/도권
       transaction.type,
       transaction.amount,
       finalAmount,
+      recorderName, // 기록자
     ]);
   }
 
   return { success: true, needsApproval: false };
 }
 
-// 거래 수정
-function updateTransaction(rowId, transaction) {
+// 거래 수정 (개인 시트 직접 수정 + 기록자 로그)
+// transaction 객체에 sheetName('cw'/'dk'), id(행번호)가 포함되어야 함
+function updateTransaction(uniqueId, transaction) {
   const userEmail = Session.getActiveUser().getEmail();
   if (!checkPermission(userEmail)) {
     throw new Error("접근 권한이 없습니다.");
   }
 
+  // uniqueId 예: "cw-5"
+  const parts = uniqueId.split("-");
+  const sheetName = parts[0];
+  const rowId = parseInt(parts[1]); // 실제 행 번호
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const recordSheet = ss.getSheetByName("기록자");
   const recorderName = getNameFromEmail(userEmail);
   const needsApproval = !isParent();
+  const koreanTargetName = getKoreanName(transaction.name);
 
-  const oldData = recordSheet.getRange(rowId + 1, 1, 1, 5).getValues()[0];
-  const oldName = oldData[2];
-  const oldDate = formatDate(oldData[0]);
-  const oldType = oldData[3];
-  const oldAmount = Number(oldData[4]);
-
-  // 부모가 아닌 경우: 승인 대기 상태로 기록만
-  if (needsApproval) {
+  // 기록자 시트에 로그 남기기 ("수정 요청" 또는 "수정 완료")
+  const recordSheet = ss.getSheetByName("기록자");
+  if (recordSheet) {
     recordSheet.appendRow([
       transaction.date,
       recorderName,
-      transaction.name,
+      koreanTargetName,
       transaction.type,
       transaction.amount,
-      "수정",
-      "대기중",
-      "",
-      "",
+      "수정(" + sheetName + " " + rowId + "행)",
+      needsApproval ? "대기중" : "승인됨",
+      needsApproval ? "" : "아빠",
+      needsApproval ? "" : new Date(),
     ]);
+  }
 
+  if (needsApproval) {
     sendEmailNotification("수정", transaction, recorderName);
     return { success: true, needsApproval: true };
   }
 
-  // 부모인 경우: 즉시 개인 시트에 반영
-  const personalSheet = ss.getSheetByName(oldName);
-  if (personalSheet) {
-    const data = personalSheet.getDataRange().getValues();
-    for (let i = 1; i < data.length; i++) {
-      if (
-        formatDate(data[i][0]) === oldDate &&
-        data[i][2] === oldType &&
-        Number(data[i][3]) === oldAmount
-      ) {
-        personalSheet
-          .getRange(i + 1, 1, 1, 4)
-          .setValues([
-            [
-              transaction.date,
-              transaction.name,
-              transaction.type,
-              transaction.amount,
-            ],
-          ]);
-        recalculateFinalAmounts(personalSheet);
-        break;
-      }
-    }
-  }
+  // 부모인 경우, 개인 시트의 해당 행을 직접 수정
+  const personalSheet = ss.getSheetByName(sheetName);
+  if (personalSheet && rowId > 1) {
+    // 수정 반영 [Date, Name, Type, Amount] (Balance는 재계산 필요, Recorder는 유지? or Update?)
+    // Recorder를 수정자로 바꿀지, 원작자로 둘지 -> 수정자로 바꾸거나 "원작자(수정:누구)"로 표시?
+    // 일단 수정자로 덮어쓰기 or 유지. 여기선 수정자로 업데이트.
 
-  recordSheet.appendRow([
-    transaction.date,
-    recorderName,
-    transaction.name,
-    transaction.type,
-    transaction.amount,
-    "수정",
-    "승인됨",
-    "admin",
-    new Date(),
-  ]);
+    // [Date, Name, Type, Amount]
+    personalSheet
+      .getRange(rowId, 1, 1, 4)
+      .setValues([
+        [
+          transaction.date,
+          koreanTargetName,
+          transaction.type,
+          transaction.amount,
+        ],
+      ]);
+
+    // Recorder 업데이트 (F열)
+    personalSheet.getRange(rowId, 6).setValue(recorderName);
+
+    // 잔액 전체 재계산
+    recalculateFinalAmounts(personalSheet);
+  }
 
   return { success: true, needsApproval: false };
 }
 
-// 거래 삭제
-function deleteTransaction(rowId) {
+// 거래 삭제 (개인 시트 직접 삭제 + 기록자 로그)
+function deleteTransaction(uniqueId) {
   const userEmail = Session.getActiveUser().getEmail();
   if (!checkPermission(userEmail)) {
     throw new Error("접근 권한이 없습니다.");
   }
 
+  const parts = uniqueId.split("-");
+  const sheetName = parts[0];
+  const rowId = parseInt(parts[1]);
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const recordSheet = ss.getSheetByName("기록자");
   const recorderName = getNameFromEmail(userEmail);
   const needsApproval = !isParent();
 
-  const row = recordSheet.getRange(rowId + 1, 1, 1, 5).getValues()[0];
-  const name = row[2];
-  const date = formatDate(row[0]);
-  const type = row[3];
-  const amount = Number(row[4]);
-
-  const transaction = { date, name, type, amount };
-
-  // 부모가 아닌 경우: 승인 대기 상태로 기록만
-  if (needsApproval) {
+  // 기록자 시트에 로그
+  const recordSheet = ss.getSheetByName("기록자");
+  if (recordSheet) {
     recordSheet.appendRow([
-      row[0],
+      new Date(), // 날짜
       recorderName,
-      row[2],
-      row[3],
-      row[4],
-      "삭제",
-      "대기중",
-      "",
-      "",
+      sheetName,
+      "-",
+      0,
+      "삭제(" + sheetName + " " + rowId + "행)",
+      needsApproval ? "대기중" : "승인됨",
+      needsApproval ? "" : "아빠",
+      needsApproval ? "" : new Date(),
     ]);
+  }
 
-    sendEmailNotification("삭제", transaction, recorderName);
+  if (needsApproval) {
+    const dummyTrans = { date: "-", name: sheetName, type: "삭제", amount: 0 };
+    sendEmailNotification("삭제", dummyTrans, recorderName);
     return { success: true, needsApproval: true };
   }
 
-  // 부모인 경우: 즉시 개인 시트에서 삭제
-  const personalSheet = ss.getSheetByName(name);
-  if (personalSheet) {
-    const data = personalSheet.getDataRange().getValues();
-    for (let i = 1; i < data.length; i++) {
-      if (
-        formatDate(data[i][0]) === date &&
-        data[i][2] === type &&
-        Number(data[i][3]) === amount
-      ) {
-        personalSheet.deleteRow(i + 1);
-        recalculateFinalAmounts(personalSheet);
-        break;
-      }
-    }
+  // 부모인 경우 실제 삭제
+  const personalSheet = ss.getSheetByName(sheetName);
+  if (personalSheet && rowId > 1) {
+    personalSheet.deleteRow(rowId);
+    recalculateFinalAmounts(personalSheet);
   }
-
-  recordSheet.appendRow([
-    row[0],
-    recorderName,
-    row[2],
-    row[3],
-    row[4],
-    "삭제",
-    "승인됨",
-    "admin",
-    new Date(),
-  ]);
 
   return { success: true, needsApproval: false };
 }
@@ -546,19 +500,20 @@ function recalculateFinalAmounts(sheet) {
   const data = sheet.getDataRange().getValues();
   let runningTotal = 0;
 
+  // i=1부터 데이터 시작 (0은 헤더)
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0]) {
-      const type = data[i][2];
-      const amount = Number(data[i][3]);
+    // data[i][0]은 Date
+    const type = data[i][2]; // C열
+    const amount = Number(data[i][3]) || 0; // D열
 
-      if (type === "입금") {
-        runningTotal += amount;
-      } else if (type === "출금") {
-        runningTotal -= amount;
-      }
-
-      sheet.getRange(i + 1, 5).setValue(runningTotal);
+    if (type === "입금") {
+      runningTotal += amount;
+    } else if (type === "출금") {
+      runningTotal -= amount;
     }
+
+    // E열(Index 4)에 잔액 기록
+    sheet.getRange(i + 1, 5).setValue(runningTotal);
   }
 }
 

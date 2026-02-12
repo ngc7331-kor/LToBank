@@ -1,411 +1,819 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>L.To Bank</title>
-  
-  <!-- PWA & Mobile Support -->
-  <meta name="theme-color" content="#6366f1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="https://ngc7331-kor.github.io/LToBank/manifest.json">
-  <link rel="icon" href="https://ngc7331-kor.github.io/LToBank/app-icon.jpg" type="image/jpeg">
-  <link rel="apple-touch-icon" href="https://ngc7331-kor.github.io/LToBank/app-icon.jpg">
+  <head>
+    <base target="_top" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>L.To Bank</title>
 
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #eff6ff, #e0e7ff);
-      min-height: 100vh;
-      padding: 2rem 1rem;
-    }
-    .container { max-width: 1024px; margin: 0 auto; }
-    
-    .header { text-align: center; margin-bottom: 2rem; }
-    .header-title { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 0.5rem; }
-    .logo { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    h1 { font-size: 2.5rem; color: #1f2937; }
-    .subtitle { color: #6b7280; font-size: 1rem; }
-    
-    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
-    .card { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .card-cw { border-top: 4px solid #f472b6; }
-    .card-dk { border-top: 4px solid #60a5fa; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .card-name { font-size: 1.5rem; font-weight: bold; color: #1f2937; }
-    .card-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-    .icon-cw { background: #fce7f3; color: #f472b6; }
-    .icon-dk { background: #dbeafe; color: #60a5fa; }
-    .card-info { display: flex; flex-direction: column; gap: 0.5rem; }
-    .info-row { display: flex; justify-content: space-between; align-items: center; }
-    .info-label { color: #6b7280; font-size: 0.9rem; }
-    .info-value { font-size: 1.1rem; font-weight: 600; color: #1f2937; }
-    .info-interest { color: #f472b6; }
-    .info-total { border-top: 1px solid #e5e7eb; padding-top: 0.5rem; margin-top: 0.5rem; }
-    .total-label { font-weight: 600; color: #374151; }
-    .total-value { font-size: 1.5rem; font-weight: bold; }
-    .total-cw { color: #f472b6; }
-    .total-dk { color: #60a5fa; }
-    
-    .form-card { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-    .form-title { font-size: 1.25rem; font-weight: bold; color: #1f2937; margin-bottom: 1rem; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .form-group { display: flex; flex-direction: column; }
-    .form-label { font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
-    .form-input, .form-select { padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem; transition: all 0.2s; }
-    .form-input:focus, .form-select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
-    .btn-submit { grid-column: 1 / -1; background: #6366f1; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-    .btn-submit:hover { background: #4f46e5; transform: scale(1.02); }
-    .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
-    
-    .pending-card { background: #fff7ed; border: 2px solid #fb923c; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-    .pending-title { font-size: 1.25rem; font-weight: bold; color: #c2410c; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-    .pending-count { background: #fb923c; color: white; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.875rem; }
-    
-    .history-card { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .history-title { font-size: 1.25rem; font-weight: bold; color: #1f2937; }
-    .history-buttons { display: flex; gap: 0.5rem; }
-    .btn-mode { padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .btn-edit-mode { background: #10b981; color: white; }
-    .btn-edit-mode:hover { background: #059669; }
-    .btn-delete-mode { background: #ef4444; color: white; }
-    .btn-delete-mode:hover { background: #dc2626; }
-    .btn-cancel-mode { background: #6b7280; color: white; }
-    .btn-cancel-mode:hover { background: #4b5563; }
-    
-    table { width: 100%; border-collapse: collapse; }
-    thead { border-bottom: 2px solid #e5e7eb; }
-    th { text-align: left; padding: 0.75rem 0.5rem; font-size: 0.875rem; font-weight: 600; color: #374151; }
-    tbody tr { border-bottom: 1px solid #f3f4f6; transition: background 0.2s; }
-    tbody tr:hover { background: #f9fafb; }
-    td { padding: 0.75rem 0.5rem; font-size: 0.875rem; }
-    .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500; }
-    .badge-cw { background: #fce7f3; color: #be185d; }
-    .badge-dk { background: #dbeafe; color: #1e40af; }
-    .badge-deposit { background: #d1fae5; color: #065f46; }
-    .badge-withdraw { background: #fee2e2; color: #991b1b; }
-    .badge-pending { background: #fef3c7; color: #b45309; }
-    .amount { text-align: left; font-weight: 600; }
-    .amount-deposit { color: #059669; }
-    .amount-withdraw { color: #dc2626; }
-    .loading { text-align: center; padding: 2rem; font-size: 1.25rem; color: #6b7280; }
-    .empty { text-align: center; padding: 2rem; color: #9ca3af; }
-    
-    .action-btn { width: 36px; height: 36px; padding: 0; border: none; border-radius: 0.5rem; font-size: 1rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; margin: 0 0.25rem; }
-    .btn-edit { background: #10b981; color: white; }
-    .btn-edit:hover { background: #059669; }
-    .btn-delete { background: #ef4444; color: white; }
-    .btn-delete:hover { background: #dc2626; }
-    .btn-approve { background: #10b981; color: white; }
-    .btn-approve:hover { background: #059669; }
-    .btn-reject { background: #ef4444; color: white; }
-    .btn-reject:hover { background: #dc2626; }
-    .action-cell { text-align: center; }
-    tbody tr.editable:hover { background: #f0fdf4; cursor: pointer; }
-    tbody tr.deletable:hover { background: #fef2f2; cursor: pointer; }
-    
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: white; border-radius: 1rem; padding: 2rem; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); }
-    .modal-title { font-size: 1.25rem; font-weight: bold; color: #1f2937; margin-bottom: 1.5rem; }
-    .modal-buttons { display: flex; gap: 0.5rem; margin-top: 1.5rem; }
-    .btn-cancel { flex: 1; background: #e5e7eb; color: #374151; padding: 0.75rem; border: none; border-radius: 0.5rem; font-size: 1rem; cursor: pointer; }
-    .btn-cancel:hover { background: #d1d5db; }
-    .btn-save { flex: 1; background: #6366f1; color: white; padding: 0.75rem; border: none; border-radius: 0.5rem; font-size: 1rem; cursor: pointer; }
-    .btn-save:hover { background: #4f46e5; }
-    
-    @media (max-width: 768px) {
-      .cards { grid-template-columns: 1fr; }
-      .form-grid { grid-template-columns: 1fr; }
-      h1 { font-size: 2rem; }
-      table { font-size: 0.75rem; }
-      th, td { padding: 0.5rem 0.25rem; }
-    }
+    <!-- PWA & Mobile Support -->
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link
+      rel="manifest"
+      href="https://ngc7331-kor.github.io/LToBank/manifest.json"
+    />
+    <link
+      rel="icon"
+      href="https://ngc7331-kor.github.io/LToBank/app-icon.jpg"
+      type="image/jpeg"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="https://ngc7331-kor.github.io/LToBank/app-icon.jpg"
+    />
 
-    /* Install Button Style */
-    .install-btn {
-      margin-top: 15px;
-      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 25px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-      transition: transform 0.2s, box-shadow 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .install-btn:active { transform: scale(0.95); }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div class="header-title">
-        <img src="https://lh3.googleusercontent.com/d/13zerx7kd9zBQUhCCr_qV3u5GZdl7Qyy6" alt="Logo" class="logo" id="logo">
-        <h1>L.To Bank</h1>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: linear-gradient(to bottom right, #eff6ff, #e0e7ff);
+        min-height: 100vh;
+        padding: 2rem 1rem;
+      }
+      .container {
+        max-width: 1024px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .header-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+      }
+      .logo {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        font-size: 2.5rem;
+        color: #1f2937;
+      }
+      .subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .card-cw {
+        border-top: 4px solid #f472b6;
+      }
+      .card-dk {
+        border-top: 4px solid #60a5fa;
+      }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      .card-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #1f2937;
+      }
+      .card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+      .icon-cw {
+        background: #fce7f3;
+        color: #f472b6;
+      }
+      .icon-dk {
+        background: #dbeafe;
+        color: #60a5fa;
+      }
+      .card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .info-label {
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+      .info-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f2937;
+      }
+      .info-interest {
+        color: #f472b6;
+      }
+      .info-total {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      .total-label {
+        font-weight: 600;
+        color: #374151;
+      }
+      .total-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+      .total-cw {
+        color: #f472b6;
+      }
+      .total-dk {
+        color: #60a5fa;
+      }
+
+      .form-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+      .form-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #1f2937;
+        margin-bottom: 1rem;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+      .form-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+      }
+      .form-input,
+      .form-select {
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.2s;
+      }
+      .form-input:focus,
+      .form-select:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      }
+      .btn-submit {
+        grid-column: 1 / -1;
+        background: #6366f1;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-submit:hover {
+        background: #4f46e5;
+        transform: scale(1.02);
+      }
+      .btn-submit:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .pending-card {
+        background: #fff7ed;
+        border: 2px solid #fb923c;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+      .pending-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #c2410c;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .pending-count {
+        background: #fb923c;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.875rem;
+      }
+
+      .history-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      .history-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #1f2937;
+      }
+      .history-buttons {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .btn-mode {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-edit-mode {
+        background: #10b981;
+        color: white;
+      }
+      .btn-edit-mode:hover {
+        background: #059669;
+      }
+      .btn-delete-mode {
+        background: #ef4444;
+        color: white;
+      }
+      .btn-delete-mode:hover {
+        background: #dc2626;
+      }
+      .btn-cancel-mode {
+        background: #6b7280;
+        color: white;
+      }
+      .btn-cancel-mode:hover {
+        background: #4b5563;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      thead {
+        border-bottom: 2px solid #e5e7eb;
+      }
+      th {
+        text-align: left;
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+      }
+      tbody tr {
+        border-bottom: 1px solid #f3f4f6;
+        transition: background 0.2s;
+      }
+      tbody tr:hover {
+        background: #f9fafb;
+      }
+      td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+      .badge-cw {
+        background: #fce7f3;
+        color: #be185d;
+      }
+      .badge-dk {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-deposit {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .badge-withdraw {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-pending {
+        background: #fef3c7;
+        color: #b45309;
+      }
+      .amount {
+        text-align: left;
+        font-weight: 600;
+      }
+      .amount-deposit {
+        color: #059669;
+      }
+      .amount-withdraw {
+        color: #dc2626;
+      }
+      .loading {
+        text-align: center;
+        padding: 2rem;
+        font-size: 1.25rem;
+        color: #6b7280;
+      }
+      .empty {
+        text-align: center;
+        padding: 2rem;
+        color: #9ca3af;
+      }
+
+      .action-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0.25rem;
+      }
+      .btn-edit {
+        background: #10b981;
+        color: white;
+      }
+      .btn-edit:hover {
+        background: #059669;
+      }
+      .btn-delete {
+        background: #ef4444;
+        color: white;
+      }
+      .btn-delete:hover {
+        background: #dc2626;
+      }
+      .btn-approve {
+        background: #10b981;
+        color: white;
+      }
+      .btn-approve:hover {
+        background: #059669;
+      }
+      .btn-reject {
+        background: #ef4444;
+        color: white;
+      }
+      .btn-reject:hover {
+        background: #dc2626;
+      }
+      .action-cell {
+        text-align: center;
+      }
+      tbody tr.editable:hover {
+        background: #f0fdf4;
+        cursor: pointer;
+      }
+      tbody tr.deletable:hover {
+        background: #fef2f2;
+        cursor: pointer;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal.active {
+        display: flex;
+      }
+      .modal-content {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      }
+      .modal-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+      }
+      .modal-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+      }
+      .btn-cancel {
+        flex: 1;
+        background: #e5e7eb;
+        color: #374151;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      .btn-cancel:hover {
+        background: #d1d5db;
+      }
+      .btn-save {
+        flex: 1;
+        background: #6366f1;
+        color: white;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      .btn-save:hover {
+        background: #4f46e5;
+      }
+
+      @media (max-width: 768px) {
+        .cards {
+          grid-template-columns: 1fr;
+        }
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 2rem;
+        }
+        table {
+          font-size: 0.75rem;
+        }
+        th,
+        td {
+          padding: 0.5rem 0.25rem;
+        }
+      }
+
+      /* Install Button Style */
+      .install-btn {
+        margin-top: 15px;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .install-btn:active {
+        transform: scale(0.95);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="header-title">
+          <img
+            src="https://lh3.googleusercontent.com/d/13zerx7kd9zBQUhCCr_qV3u5GZdl7Qyy6"
+            alt="Logo"
+            class="logo"
+            id="logo"
+          />
+          <h1>L.To Bank</h1>
+        </div>
+        <p class="subtitle">특별한 저축통장 (연 3.1%)</p>
+
+        <!-- PWA Install Button -->
+        <button id="installAppBtn" class="install-btn" style="display: none">
+          📥 앱 설치하기
+        </button>
       </div>
-      <p class="subtitle">특별한 저축통장 (연 3.1%)</p>
-      
-      <!-- PWA Install Button -->
-      <button id="installAppBtn" class="install-btn" style="display: none;">
-        📥 앱 설치하기
-      </button>
+
+      <div class="cards">
+        <div class="card card-cw">
+          <div class="card-header">
+            <div class="card-name">채원</div>
+            <div class="card-icon icon-cw">📈</div>
+          </div>
+          <div class="card-info">
+            <div class="info-row">
+              <span class="info-label">저축액</span>
+              <span class="info-value" id="cw-deposit">₩0</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">이자</span>
+              <span class="info-value info-interest" id="cw-interest">+₩0</span>
+            </div>
+            <div class="info-row info-total">
+              <span class="total-label">총액</span>
+              <span class="total-value total-cw" id="cw-total">₩0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-dk">
+          <div class="card-header">
+            <div class="card-name">도권</div>
+            <div class="card-icon icon-dk">📈</div>
+          </div>
+          <div class="card-info">
+            <div class="info-row">
+              <span class="info-label">저축액</span>
+              <span class="info-value" id="dk-deposit">₩0</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">이자</span>
+              <span class="info-value info-interest" id="dk-interest">+₩0</span>
+            </div>
+            <div class="info-row info-total">
+              <span class="total-label">총액</span>
+              <span class="total-value total-dk" id="dk-total">₩0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 승인 대기 카드 (부모만) -->
+      <div id="pendingSection" style="display: none">
+        <div class="pending-card">
+          <h3 class="pending-title">
+            ⏰ 승인 대기
+            <span class="pending-count" id="pendingCount">0</span>
+          </h3>
+          <div id="pending-container">
+            <div class="loading">대기중인 거래를 확인하는 중...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3 class="form-title">새 거래 등록</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">이름</label>
+            <select id="name" class="form-select">
+              <option value="">선택하세요</option>
+              <option value="cw">채원</option>
+              <option value="dk">도권</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">날짜</label>
+            <input type="date" id="date" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">구분</label>
+            <select id="type" class="form-select">
+              <option value="입금">입금</option>
+              <option value="출금">출금</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">금액 (원)</label>
+            <input
+              type="number"
+              id="amount"
+              class="form-input"
+              placeholder="금액을 입력하세요"
+            />
+          </div>
+          <button class="btn-submit" onclick="handleSubmit()">확인</button>
+        </div>
+      </div>
+
+      <div class="history-card">
+        <div class="history-header">
+          <h3 class="history-title">최근 거래 내역</h3>
+          <div class="history-buttons">
+            <button
+              id="editModeBtn"
+              class="btn-mode btn-edit-mode"
+              onclick="enterEditMode()"
+            >
+              수정
+            </button>
+            <button
+              id="deleteModeBtn"
+              class="btn-mode btn-delete-mode"
+              onclick="enterDeleteMode()"
+            >
+              삭제
+            </button>
+          </div>
+        </div>
+        <div id="history-container">
+          <div class="loading">데이터를 불러오는 중...</div>
+        </div>
+      </div>
     </div>
 
-    <div class="cards">
-      <div class="card card-cw">
-        <div class="card-header">
-          <div class="card-name">채원</div>
-          <div class="card-icon icon-cw">📈</div>
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <h3 class="modal-title">거래 수정</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">이름</label>
+            <select id="edit-name" class="form-select">
+              <option value="cw">채원</option>
+              <option value="dk">도권</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">날짜</label>
+            <input type="date" id="edit-date" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">구분</label>
+            <select id="edit-type" class="form-select">
+              <option value="입금">입금</option>
+              <option value="출금">출금</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">금액 (원)</label>
+            <input type="number" id="edit-amount" class="form-input" />
+          </div>
         </div>
-        <div class="card-info">
-          <div class="info-row">
-            <span class="info-label">저축액</span>
-            <span class="info-value" id="cw-deposit">₩0</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">이자</span>
-            <span class="info-value info-interest" id="cw-interest">+₩0</span>
-          </div>
-          <div class="info-row info-total">
-            <span class="total-label">총액</span>
-            <span class="total-value total-cw" id="cw-total">₩0</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card card-dk">
-        <div class="card-header">
-          <div class="card-name">도권</div>
-          <div class="card-icon icon-dk">📈</div>
-        </div>
-        <div class="card-info">
-          <div class="info-row">
-            <span class="info-label">저축액</span>
-            <span class="info-value" id="dk-deposit">₩0</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">이자</span>
-            <span class="info-value info-interest" id="dk-interest">+₩0</span>
-          </div>
-          <div class="info-row info-total">
-            <span class="total-label">총액</span>
-            <span class="total-value total-dk" id="dk-total">₩0</span>
-          </div>
+        <div class="modal-buttons">
+          <button class="btn-cancel" onclick="closeEditModal()">취소</button>
+          <button class="btn-save" onclick="saveEdit()">저장</button>
         </div>
       </div>
     </div>
 
-    <!-- 승인 대기 카드 (부모만) -->
-    <div id="pendingSection" style="display: none;">
-      <div class="pending-card">
-        <h3 class="pending-title">
-          ⏰ 승인 대기
-          <span class="pending-count" id="pendingCount">0</span>
-        </h3>
-        <div id="pending-container">
-          <div class="loading">대기중인 거래를 확인하는 중...</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-card">
-      <h3 class="form-title">새 거래 등록</h3>
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">이름</label>
-          <select id="name" class="form-select">
-            <option value="">선택하세요</option>
-            <option value="cw">채원</option>
-            <option value="dk">도권</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">날짜</label>
-          <input type="date" id="date" class="form-input">
-        </div>
-        <div class="form-group">
-          <label class="form-label">구분</label>
-          <select id="type" class="form-select">
-            <option value="입금">입금</option>
-            <option value="출금">출금</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">금액 (원)</label>
-          <input type="number" id="amount" class="form-input" placeholder="금액을 입력하세요">
-        </div>
-        <button class="btn-submit" onclick="handleSubmit()">확인</button>
-      </div>
-    </div>
-
-    <div class="history-card">
-      <div class="history-header">
-        <h3 class="history-title">최근 거래 내역</h3>
-        <div class="history-buttons">
-          <button id="editModeBtn" class="btn-mode btn-edit-mode" onclick="enterEditMode()">수정</button>
-          <button id="deleteModeBtn" class="btn-mode btn-delete-mode" onclick="enterDeleteMode()">삭제</button>
-        </div>
-      </div>
-      <div id="history-container">
-        <div class="loading">데이터를 불러오는 중...</div>
-      </div>
-    </div>
-  </div>
-
-  <div id="editModal" class="modal">
-    <div class="modal-content">
-      <h3 class="modal-title">거래 수정</h3>
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">이름</label>
-          <select id="edit-name" class="form-select">
-            <option value="cw">채원</option>
-            <option value="dk">도권</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">날짜</label>
-          <input type="date" id="edit-date" class="form-input">
-        </div>
-        <div class="form-group">
-          <label class="form-label">구분</label>
-          <select id="edit-type" class="form-select">
-            <option value="입금">입금</option>
-            <option value="출금">출금</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">금액 (원)</label>
-          <input type="number" id="edit-amount" class="form-input">
-        </div>
-      </div>
-      <div class="modal-buttons">
-        <button class="btn-cancel" onclick="closeEditModal()">취소</button>
-        <button class="btn-save" onclick="saveEdit()">저장</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // GitHub Pages에서 직접 접속 시 차단 (보안 강화)
-    if (window.location.hostname.includes('github.io')) {
-      document.body.innerHTML = `
+    <script>
+      // GitHub Pages에서 직접 접속 시 차단 (보안 강화)
+      if (window.location.hostname.includes("github.io")) {
+        document.body.innerHTML = `
         <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;text-align:center;font-family:sans-serif;">
           <h2 style="color:#ef4444;">⛔ 접근 권한이 없습니다</h2>
           <p>이 페이지는 정적 파일이며, 보안상 기능을 제공하지 않습니다.</p>
           <p><strong>앱스스크립트(Google Apps Script) 주소</strong>로 접속해주세요.</p>
         </div>
       `;
-      throw new Error('GitHub Pages Access Blocked');
-    }
-
-    let transactions = [];
-    let pendingTransactions = [];
-    let editingRowId = null;
-    let currentMode = 'normal';
-    let isParent = false;
-    let deferredPrompt;
-
-    // PWA Install Prompt Logic
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      const installBtn = document.getElementById('installAppBtn');
-      if (installBtn) {
-        installBtn.style.display = 'inline-flex';
+        throw new Error("GitHub Pages Access Blocked");
       }
-    });
 
-    document.getElementById('installAppBtn')?.addEventListener('click', async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`User response to the install prompt: ${outcome}`);
-      deferredPrompt = null;
-      document.getElementById('installAppBtn').style.display = 'none';
-    });
-    
-    // 이름 매핑 함수 추가
-    function getDisplayName(name) {
-      if (name === 'cw') return '채원';
-      if (name === 'dk') return '도권';
-      if (name === 'admin') return '부모님';
-      return name;
-    }
+      let transactions = [];
+      let pendingTransactions = [];
+      let editingUniqueId = null; // 수정: rowId -> uniqueId
+      let currentMode = "normal";
+      let isParent = false;
+      let deferredPrompt;
 
-    window.onload = function() {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('date').value = today;
-      
-      document.getElementById('logo').onerror = function() {
-        this.style.display = 'none';
+      // PWA Install Prompt Logic
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installBtn = document.getElementById("installAppBtn");
+        if (installBtn) {
+          installBtn.style.display = "inline-flex";
+        }
+      });
+
+      document
+        .getElementById("installAppBtn")
+        ?.addEventListener("click", async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`User response to the install prompt: ${outcome}`);
+          deferredPrompt = null;
+          document.getElementById("installAppBtn").style.display = "none";
+        });
+
+      // 이름 매핑 함수
+      function getDisplayName(name) {
+        if (name === "cw") return "채원";
+        if (name === "dk") return "도권";
+        if (name === "admin" || name === "parent") return "아빠"; // 아빠로 통합
+        return name;
+      }
+
+      window.onload = function () {
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("date").value = today;
+
+        document.getElementById("logo").onerror = function () {
+          this.style.display = "none";
+        };
+
+        // 부모인지 확인
+        google.script.run
+          .withSuccessHandler(function (result) {
+            isParent = result;
+            if (isParent) {
+              document.getElementById("pendingSection").style.display = "block";
+              loadPendingTransactions();
+            }
+            loadTransactions();
+          })
+          .checkIsParent();
       };
-      
-      // 부모인지 확인
-      google.script.run
-        .withSuccessHandler(function(result) {
-          isParent = result;
-          if (isParent) {
-            document.getElementById('pendingSection').style.display = 'block';
-            loadPendingTransactions();
-          }
-          loadTransactions();
-        })
-        .checkIsParent();
-    };
 
-    function getNameDisplay(name) {
-      if (name === 'cw') return '채원';
-      if (name === 'dk') return '도권';
-      return name;
-    }
-    
-    function loadPendingTransactions() {
-      google.script.run
-        .withSuccessHandler(function(data) {
-          pendingTransactions = data;
-          updatePendingDisplay();
-        })
-        .withFailureHandler(function(error) {
-          console.error('승인 대기 로드 실패:', error);
-        })
-        .getPendingTransactions();
-    }
-    
-    function updatePendingDisplay() {
-      const container = document.getElementById('pending-container');
-      const count = document.getElementById('pendingCount');
-      
-      count.textContent = pendingTransactions.length;
-      
-      if (pendingTransactions.length === 0) {
-        container.innerHTML = '<div class="empty">승인 대기중인 거래가 없습니다.</div>';
-        return;
+      // 승인 대기 목록 (기록자 시트) - 기존 로직 유지
+      function loadPendingTransactions() {
+        google.script.run
+          .withSuccessHandler(function (data) {
+            pendingTransactions = data;
+            updatePendingDisplay();
+          })
+          .withFailureHandler(function (error) {
+            console.error("승인 대기 로드 실패:", error);
+          })
+          .getPendingTransactions();
       }
-      
-      let html = '<table><thead><tr><th>날짜</th><th>기록자</th><th>대상</th><th>구분</th><th>금액</th><th>작업</th><th>승인</th></tr></thead><tbody>';
-      
-      pendingTransactions.forEach(t => {
-        const nameBadge = t.name === 'cw' ? 'badge-cw' : 'badge-dk';
-        const typeBadge = t.type === '입금' ? 'badge-deposit' : 'badge-withdraw';
-        const sign = t.type === '입금' ? '+' : '-';
-        const actionBadge = 'badge-pending';
-        
-        // 표시용 이름 변환
-        const displayName = getNameDisplay(t.name);
-        const displayRecorder = getNameDisplay(t.recorder);
 
-        html += `
+      function updatePendingDisplay() {
+        const container = document.getElementById("pending-container");
+        const count = document.getElementById("pendingCount");
+
+        count.textContent = pendingTransactions.length;
+
+        if (pendingTransactions.length === 0) {
+          container.innerHTML =
+            '<div class="empty">승인 대기중인 거래가 없습니다.</div>';
+          return;
+        }
+
+        let html =
+          "<table><thead><tr><th>날짜</th><th>기록자</th><th>대상</th><th>구분</th><th>금액</th><th>작업</th><th>승인</th></tr></thead><tbody>";
+
+        pendingTransactions.forEach((t) => {
+          const nameBadge = t.name === "cw" ? "badge-cw" : "badge-dk";
+          const typeBadge =
+            t.type === "입금" ? "badge-deposit" : "badge-withdraw";
+          const sign = t.type === "입금" ? "+" : "-";
+          const actionBadge = "badge-pending";
+
+          // 표시용 이름 변환
+          const displayName = getDisplayName(t.name);
+          const displayRecorder = getDisplayName(t.recorder);
+
+          html += `
           <tr>
             <td>${t.date}</td>
             <td>${displayRecorder}</td>
@@ -419,282 +827,362 @@
             </td>
           </tr>
         `;
-      });
-      
-      html += '</tbody></table>';
-      container.innerHTML = html;
-    }
-    
-    function approveTransaction(rowId) {
-      if (!confirm('이 거래를 승인하시겠습니까?')) return;
-      
-      google.script.run
-        .withSuccessHandler(function() {
-          alert('승인되었습니다!');
-          loadPendingTransactions();
-          loadTransactions();
-        })
-        .withFailureHandler(function(error) {
-          alert('승인 실패: ' + error.message);
-        })
-        .approveTransaction(rowId);
-    }
-    
-    function rejectTransaction(rowId) {
-      if (!confirm('이 거래를 거절하시겠습니까?')) return;
-      
-      google.script.run
-        .withSuccessHandler(function() {
-          alert('거절되었습니다.');
-          loadPendingTransactions();
-        })
-        .withFailureHandler(function(error) {
-          alert('거절 실패: ' + error.message);
-        })
-        .rejectTransaction(rowId);
-    }
-    
-    function loadTransactions() {
-      google.script.run
-        .withSuccessHandler(function(data) {
-          transactions = data;
-          updateDisplay();
-        })
-        .withFailureHandler(function(error) {
-          alert('데이터 로드 실패: ' + error.message);
-        })
-        .getTransactions();
-    }
-    
-    function updateDisplay() {
-      updateBalances();
-      updateHistory();
-    }
-    
-    function updateBalances() {
-      google.script.run
-        .withSuccessHandler(function(data) {
-          const interest = calculateInterestFromTransactions(data.transactions);
-          document.getElementById('cw-deposit').textContent = '₩' + formatNumber(data.deposit);
-          document.getElementById('cw-interest').textContent = '+₩' + formatNumber(interest);
-          document.getElementById('cw-total').textContent = '₩' + formatNumber(data.deposit + interest);
-        })
-        .getPersonalSheetData('cw');
-      
-      google.script.run
-        .withSuccessHandler(function(data) {
-          const interest = calculateInterestFromTransactions(data.transactions);
-          document.getElementById('dk-deposit').textContent = '₩' + formatNumber(data.deposit);
-          document.getElementById('dk-interest').textContent = '+₩' + formatNumber(interest);
-          document.getElementById('dk-total').textContent = '₩' + formatNumber(data.deposit + interest);
-        })
-        .getPersonalSheetData('dk');
-    }
-    
-    function calculateInterestFromTransactions(txs) {
-      const today = new Date(document.getElementById('date').value || new Date());
-      let deposits = [];
-      
-      txs.forEach(tx => {
-        if (tx.type === '입금') {
-          deposits.push({ amount: tx.amount, date: tx.date, remainingAmount: tx.amount });
-        } else if (tx.type === '출금') {
-          let remainingWithdrawal = tx.amount;
-          for (let i = 0; i < deposits.length && remainingWithdrawal > 0; i++) {
-            if (deposits[i].remainingAmount > 0) {
-              const deduction = Math.min(deposits[i].remainingAmount, remainingWithdrawal);
-              deposits[i].remainingAmount -= deduction;
-              remainingWithdrawal -= deduction;
+        });
+
+        html += "</tbody></table>";
+        container.innerHTML = html;
+      }
+
+      function approveTransaction(rowId) {
+        if (!confirm("이 거래를 승인하시겠습니까?")) return;
+
+        google.script.run
+          .withSuccessHandler(function () {
+            alert("승인되었습니다!");
+            loadPendingTransactions();
+            loadTransactions();
+          })
+          .withFailureHandler(function (error) {
+            alert("승인 실패: " + error.message);
+          })
+          .approveTransaction(rowId);
+      }
+
+      function rejectTransaction(rowId) {
+        if (!confirm("이 거래를 거절하시겠습니까?")) return;
+
+        google.script.run
+          .withSuccessHandler(function () {
+            alert("거절되었습니다.");
+            loadPendingTransactions();
+          })
+          .withFailureHandler(function (error) {
+            alert("거절 실패: " + error.message);
+          })
+          .rejectTransaction(rowId);
+      }
+
+      // 완료된 거래 목록 (개인 시트) - 변경된 로직 적용
+      function loadTransactions() {
+        google.script.run
+          .withSuccessHandler(function (data) {
+            transactions = data;
+            updateDisplay();
+          })
+          .withFailureHandler(function (error) {
+            alert("데이터 로드 실패: " + error.message);
+          })
+          .getTransactions();
+      }
+
+      function updateDisplay() {
+        updateBalances();
+        updateHistory();
+      }
+
+      function updateBalances() {
+        google.script.run
+          .withSuccessHandler(function (data) {
+            const interest = calculateInterestFromTransactions(
+              data.transactions,
+            ); // 여기 로직은 프론트엔드 계산 유지?
+            // getPersonalSheetData는 이제 transaction을 빈 배열로 주므로, interest 계산 로직 수정 필요?
+            // 아니다, calculateInterestFromTransactions는 transactions 배열(전체데이터)을 인자로 받는다.
+            // 하지만 data.transactions는 빈 배열이다.
+            // 따라서 calculateInterestFromTransactions는 `transactions` (전역 변수, 전체 리스트)를 써야 함.
+
+            // 하지만 이 함수는 'cw' 데이터만 필요함.
+            // transactions 전역 변수에서 cw 데이터만 필터링해야 함.
+            const cwTxs = transactions.filter((t) => t.sheetName === "cw");
+            const interestVal = calculateInterestFromTransactions(cwTxs); // 수정
+
+            document.getElementById("cw-deposit").textContent =
+              "₩" + formatNumber(data.deposit);
+            document.getElementById("cw-interest").textContent =
+              "+₩" + formatNumber(interestVal);
+            document.getElementById("cw-total").textContent =
+              "₩" + formatNumber(data.deposit + interestVal);
+          })
+          .getPersonalSheetData("cw");
+
+        google.script.run
+          .withSuccessHandler(function (data) {
+            const dkTxs = transactions.filter((t) => t.sheetName === "dk");
+            const interestVal = calculateInterestFromTransactions(dkTxs); // 수정
+
+            document.getElementById("dk-deposit").textContent =
+              "₩" + formatNumber(data.deposit);
+            document.getElementById("dk-interest").textContent =
+              "+₩" + formatNumber(interestVal);
+            document.getElementById("dk-total").textContent =
+              "₩" + formatNumber(data.deposit + interestVal);
+          })
+          .getPersonalSheetData("dk");
+      }
+
+      function calculateInterestFromTransactions(txs) {
+        // 날짜순 오름차순(과거->미래) 정렬 필요 (이자 계산 위해)
+        const sortedTxs = [...txs].sort(
+          (a, b) => new Date(a.date) - new Date(b.date),
+        );
+
+        const today = new Date(
+          document.getElementById("date").value || new Date(),
+        );
+        let deposits = [];
+
+        sortedTxs.forEach((tx) => {
+          if (tx.type === "입금") {
+            deposits.push({
+              amount: tx.amount,
+              date: tx.date,
+              remainingAmount: tx.amount,
+            });
+          } else if (tx.type === "출금") {
+            let remainingWithdrawal = tx.amount;
+            for (
+              let i = 0;
+              i < deposits.length && remainingWithdrawal > 0;
+              i++
+            ) {
+              if (deposits[i].remainingAmount > 0) {
+                const deduction = Math.min(
+                  deposits[i].remainingAmount,
+                  remainingWithdrawal,
+                );
+                deposits[i].remainingAmount -= deduction;
+                remainingWithdrawal -= deduction;
+              }
             }
           }
-        }
-      });
-      
-      deposits = deposits.filter(d => d.remainingAmount > 0);
-      
-      let totalInterest = 0;
-      deposits.forEach(deposit => {
-        const depositDate = new Date(deposit.date);
-        const days = Math.floor((today - depositDate) / (1000 * 60 * 60 * 24));
-        if (days > 0) {
-          totalInterest += deposit.remainingAmount * 0.031 * days / 365;
-        }
-      });
-      
-      return Math.ceil(totalInterest / 10) * 10;
-    }
-    
-    function updateHistory() {
-      const container = document.getElementById('history-container');
-      const recent = transactions.slice(-10).reverse();
-      
-      if (recent.length === 0) {
-        container.innerHTML = '<div class="empty">아직 거래 내역이 없습니다.</div>';
-        return;
+        });
+
+        deposits = deposits.filter((d) => d.remainingAmount > 0);
+
+        let totalInterest = 0;
+        deposits.forEach((deposit) => {
+          const depositDate = new Date(deposit.date);
+          const days = Math.floor(
+            (today - depositDate) / (1000 * 60 * 60 * 24),
+          );
+          if (days > 0) {
+            totalInterest += (deposit.remainingAmount * 0.031 * days) / 365;
+          }
+        });
+
+        return Math.ceil(totalInterest / 10) * 10;
       }
-      
-      let html = '<table><thead><tr><th>날짜</th><th>이름</th><th>구분</th><th>금액</th><th>기록자</th>';
-      if (currentMode === 'edit' || currentMode === 'delete') html += '<th>작업</th>';
-      html += '</tr></thead><tbody>';
-      
-      recent.forEach(t => {
-        const nameBadge = t.name === 'cw' ? 'badge-cw' : 'badge-dk';
-        const typeBadge = t.type === '입금' ? 'badge-deposit' : 'badge-withdraw';
-        const amountClass = t.type === '입금' ? 'amount-deposit' : 'amount-withdraw';
-        const sign = t.type === '입금' ? '+' : '-';
-        // 표시용 이름 변환
-        const displayName = getNameDisplay(t.name);
-        const displayRecorder = getNameDisplay(t.recorder || '-');
-        
-        const rowClass = currentMode === 'edit' ? 'editable' : (currentMode === 'delete' ? 'deletable' : '');
-        
-        html += `<tr class="${rowClass}"><td>${t.date}</td><td><span class="badge ${nameBadge}">${displayName}</span></td>
+
+      function updateHistory() {
+        const container = document.getElementById("history-container");
+        // transactions는 이미 날짜 역순(최신->과거)으로 정렬되어 옴
+        // 하지만 혹시 모르니 slice
+        const recent = transactions.slice(0, 50); // 최근 50개만? 상단 10개만?
+        // 기존에는 slice(-10).reverse() 였음. 백엔드에서 오름차순으로 줬었기 때문.
+        // 이제 백엔드에서 내림차순(최신순)으로 줌.
+        // 따라서 앞부분만 자르면 됨.
+        const displayList = recent.slice(0, 10);
+
+        if (displayList.length === 0) {
+          container.innerHTML =
+            '<div class="empty">아직 거래 내역이 없습니다.</div>';
+          return;
+        }
+
+        let html =
+          "<table><thead><tr><th>날짜</th><th>이름</th><th>구분</th><th>금액</th><th>기록자</th>";
+        if (currentMode === "edit" || currentMode === "delete")
+          html += "<th>작업</th>";
+        html += "</tr></thead><tbody>";
+
+        displayList.forEach((t) => {
+          // 이름 표시: 이미 서버에서 한글로 올 수도 있지만(백엔드 로직상),
+          // 여기서 한번 더 체크. (t.name은 '채원' or '도권'으로 옴)
+          // t.sheetName은 'cw' or 'dk'
+          const nameBadge = t.sheetName === "cw" ? "badge-cw" : "badge-dk";
+          const typeBadge =
+            t.type === "입금" ? "badge-deposit" : "badge-withdraw";
+          const amountClass =
+            t.type === "입금" ? "amount-deposit" : "amount-withdraw";
+          const sign = t.type === "입금" ? "+" : "-";
+
+          // 이름 변환 (서버에서 이미 한글로 줄 수도 있음)
+          const displayName = getDisplayName(t.name);
+          // 기록자 변환
+          const displayRecorder = getDisplayName(t.recorder || "-");
+
+          const rowClass =
+            currentMode === "edit"
+              ? "editable"
+              : currentMode === "delete"
+                ? "deletable"
+                : "";
+
+          html += `<tr class="${rowClass}"><td>${t.date}</td><td><span class="badge ${nameBadge}">${displayName}</span></td>
                  <td><span class="badge ${typeBadge}">${t.type}</span></td>
                  <td class="amount ${amountClass}">${sign}₩${formatNumber(t.amount)}</td><td>${displayRecorder}</td>`;
-        
-        if (currentMode === 'edit') {
-          html += `<td class="action-cell"><button class="action-btn btn-edit" onclick="editTransaction(${t.id}, '${t.name}', '${t.date}', '${t.type}', ${t.amount})">✓</button></td>`;
-        } else if (currentMode === 'delete') {
-          html += `<td class="action-cell"><button class="action-btn btn-delete" onclick="deleteTransaction(${t.id})">🗑</button></td>`;
+
+          if (currentMode === "edit") {
+            // uniqueId 사용
+            html += `<td class="action-cell"><button class="action-btn btn-edit" onclick="editTransaction('${t.uniqueId}', '${t.sheetName}', '${t.date}', '${t.type}', ${t.amount})">✓</button></td>`;
+          } else if (currentMode === "delete") {
+            html += `<td class="action-cell"><button class="action-btn btn-delete" onclick="deleteTransaction('${t.uniqueId}')">🗑</button></td>`;
+          }
+
+          html += "</tr>";
+        });
+
+        html += "</tbody></table>";
+        container.innerHTML = html;
+      }
+
+      function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
+      function handleSubmit() {
+        const name = document.getElementById("name").value;
+        const date = document.getElementById("date").value;
+        const type = document.getElementById("type").value;
+        const amount = parseInt(document.getElementById("amount").value);
+
+        if (!name) {
+          alert("이름을 선택해주세요.");
+          return;
         }
-        
-        html += '</tr>';
-      });
-      
-      html += '</tbody></table>';
-      container.innerHTML = html;
-    }
-    
-    function formatNumber(num) {
-      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-    
-    function handleSubmit() {
-      const name = document.getElementById('name').value;
-      const date = document.getElementById('date').value;
-      const type = document.getElementById('type').value;
-      const amount = parseInt(document.getElementById('amount').value);
-      
-      if (!name) { alert('이름을 선택해주세요.'); return; }
-      if (!amount || amount <= 0) { alert('금액을 입력해주세요.'); return; }
-      
-      const btn = document.querySelector('.btn-submit');
-      btn.disabled = true;
-      btn.textContent = '저장 중...';
-      
-      google.script.run
-        .withSuccessHandler(function(result) {
-          if (result.needsApproval) {
-            alert('거래가 등록되었습니다!\n부모님의 승인 후 반영됩니다.');
-          } else {
-            alert('거래가 등록되었습니다!');
-          }
-          document.getElementById('name').value = '';
-          document.getElementById('amount').value = '';
-          document.getElementById('date').value = new Date().toISOString().split('T')[0];
-          loadTransactions();
-          if (isParent) loadPendingTransactions();
-          btn.disabled = false;
-          btn.textContent = '확인';
-        })
-        .withFailureHandler(function(error) {
-          alert('저장 실패: ' + error.message);
-          btn.disabled = false;
-          btn.textContent = '확인';
-        })
-        .addTransaction({ name, date, type, amount });
-    }
-    
-    function enterEditMode() {
-      currentMode = 'edit';
-      document.getElementById('editModeBtn').textContent = '수정 취소';
-      document.getElementById('editModeBtn').className = 'btn-mode btn-cancel-mode';
-      document.getElementById('editModeBtn').onclick = exitMode;
-      document.getElementById('deleteModeBtn').style.display = 'none';
-      updateHistory();
-    }
-    
-    function enterDeleteMode() {
-      currentMode = 'delete';
-      document.getElementById('deleteModeBtn').textContent = '삭제 취소';
-      document.getElementById('deleteModeBtn').className = 'btn-mode btn-cancel-mode';
-      document.getElementById('deleteModeBtn').onclick = exitMode;
-      document.getElementById('editModeBtn').style.display = 'none';
-      updateHistory();
-    }
-    
-    function exitMode() {
-      currentMode = 'normal';
-      document.getElementById('editModeBtn').textContent = '수정';
-      document.getElementById('editModeBtn').className = 'btn-mode btn-edit-mode';
-      document.getElementById('editModeBtn').onclick = enterEditMode;
-      document.getElementById('editModeBtn').style.display = 'inline-block';
-      document.getElementById('deleteModeBtn').textContent = '삭제';
-      document.getElementById('deleteModeBtn').className = 'btn-mode btn-delete-mode';
-      document.getElementById('deleteModeBtn').onclick = enterDeleteMode;
-      document.getElementById('deleteModeBtn').style.display = 'inline-block';
-      updateHistory();
-    }
-    
-    function editTransaction(rowId, name, date, type, amount) {
-      editingRowId = rowId;
-      document.getElementById('edit-name').value = name;
-      document.getElementById('edit-date').value = date;
-      document.getElementById('edit-type').value = type;
-      document.getElementById('edit-amount').value = amount;
-      document.getElementById('editModal').classList.add('active');
-      exitMode();
-    }
-    
-    function closeEditModal() {
-      document.getElementById('editModal').classList.remove('active');
-      editingRowId = null;
-    }
-    
-    function saveEdit() {
-      const name = document.getElementById('edit-name').value;
-      const date = document.getElementById('edit-date').value;
-      const type = document.getElementById('edit-type').value;
-      const amount = parseInt(document.getElementById('edit-amount').value);
-      
-      if (!amount || amount <= 0) { alert('금액을 입력해주세요.'); return; }
-      
-      google.script.run
-        .withSuccessHandler(function(result) {
-          if (result.needsApproval) {
-            alert('수정이 요청되었습니다!\n부모님의 승인 후 반영됩니다.');
-          } else {
-            alert('수정되었습니다!');
-          }
-          closeEditModal();
-          loadTransactions();
-          if (isParent) loadPendingTransactions();
-        })
-        .withFailureHandler(function(error) {
-          alert('수정 실패: ' + error.message);
-        })
-        .updateTransaction(editingRowId, { name, date, type, amount });
-    }
-    
-    function deleteTransaction(rowId) {
-      if (!confirm('정말 삭제하시겠습니까?')) return;
-      
-      google.script.run
-        .withSuccessHandler(function(result) {
-          if (result.needsApproval) {
-            alert('삭제가 요청되었습니다!\n부모님의 승인 후 반영됩니다.');
-          } else {
-            alert('삭제되었습니다!');
-          }
-          exitMode();
-          loadTransactions();
-          if (isParent) loadPendingTransactions();
-        })
-        .withFailureHandler(function(error) {
-          alert('삭제 실패: ' + error.message);
-        })
-        .deleteTransaction(rowId);
-    }
-  </script>
-</body>
+        if (!amount || amount <= 0) {
+          alert("금액을 입력해주세요.");
+          return;
+        }
+
+        const btn = document.querySelector(".btn-submit");
+        btn.disabled = true;
+        btn.textContent = "저장 중...";
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (result.needsApproval) {
+              alert("거래가 등록되었습니다!\n부모님의 승인 후 반영됩니다.");
+            } else {
+              alert("거래가 등록되었습니다!");
+            }
+            document.getElementById("name").value = "";
+            document.getElementById("amount").value = "";
+            document.getElementById("date").value = new Date()
+              .toISOString()
+              .split("T")[0];
+            loadTransactions();
+            if (isParent) loadPendingTransactions();
+            btn.disabled = false;
+            btn.textContent = "확인";
+          })
+          .withFailureHandler(function (error) {
+            alert("저장 실패: " + error.message);
+            btn.disabled = false;
+            btn.textContent = "확인";
+          })
+          .addTransaction({ name, date, type, amount });
+      }
+
+      function enterEditMode() {
+        currentMode = "edit";
+        document.getElementById("editModeBtn").textContent = "수정 취소";
+        document.getElementById("editModeBtn").className =
+          "btn-mode btn-cancel-mode";
+        document.getElementById("editModeBtn").onclick = exitMode;
+        document.getElementById("deleteModeBtn").style.display = "none";
+        updateHistory();
+      }
+
+      function enterDeleteMode() {
+        currentMode = "delete";
+        document.getElementById("deleteModeBtn").textContent = "삭제 취소";
+        document.getElementById("deleteModeBtn").className =
+          "btn-mode btn-cancel-mode";
+        document.getElementById("deleteModeBtn").onclick = exitMode;
+        document.getElementById("editModeBtn").style.display = "none";
+        updateHistory();
+      }
+
+      function exitMode() {
+        currentMode = "normal";
+        document.getElementById("editModeBtn").textContent = "수정";
+        document.getElementById("editModeBtn").className =
+          "btn-mode btn-edit-mode";
+        document.getElementById("editModeBtn").onclick = enterEditMode;
+        document.getElementById("editModeBtn").style.display = "inline-block";
+        document.getElementById("deleteModeBtn").textContent = "삭제";
+        document.getElementById("deleteModeBtn").className =
+          "btn-mode btn-delete-mode";
+        document.getElementById("deleteModeBtn").onclick = enterDeleteMode;
+        document.getElementById("deleteModeBtn").style.display = "inline-block";
+        updateHistory();
+      }
+
+      // 수정: id -> uniqueId ('cw-5')
+      // name인자는 sheetName이 아니라 UI에 표시할 이름, 하지만 로직상 sheetName('cw'/'dk')가 필요
+      function editTransaction(uniqueId, sheetName, date, type, amount) {
+        editingUniqueId = uniqueId;
+        document.getElementById("edit-name").value = sheetName; // 'cw' or 'dk'
+        document.getElementById("edit-date").value = date;
+        document.getElementById("edit-type").value = type;
+        document.getElementById("edit-amount").value = amount;
+        document.getElementById("editModal").classList.add("active");
+        exitMode();
+      }
+
+      function closeEditModal() {
+        document.getElementById("editModal").classList.remove("active");
+        editingUniqueId = null;
+      }
+
+      function saveEdit() {
+        const name = document.getElementById("edit-name").value; // 'cw' or 'dk'
+        const date = document.getElementById("edit-date").value;
+        const type = document.getElementById("edit-type").value;
+        const amount = parseInt(document.getElementById("edit-amount").value);
+
+        if (!amount || amount <= 0) {
+          alert("금액을 입력해주세요.");
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (result.needsApproval) {
+              alert("수정이 요청되었습니다!\n부모님의 승인 후 반영됩니다.");
+            } else {
+              alert("수정되었습니다!");
+            }
+            closeEditModal();
+            loadTransactions();
+            if (isParent) loadPendingTransactions();
+          })
+          .withFailureHandler(function (error) {
+            alert("수정 실패: " + error.message);
+          })
+          .updateTransaction(editingUniqueId, { name, date, type, amount });
+      }
+
+      function deleteTransaction(uniqueId) {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (result.needsApproval) {
+              alert("삭제가 요청되었습니다!\n부모님의 승인 후 반영됩니다.");
+            } else {
+              alert("삭제되었습니다!");
+            }
+            exitMode();
+            loadTransactions();
+            if (isParent) loadPendingTransactions();
+          })
+          .withFailureHandler(function (error) {
+            alert("삭제 실패: " + error.message);
+          })
+          .deleteTransaction(uniqueId);
+      }
+    </script>
+  </body>
 </html>
