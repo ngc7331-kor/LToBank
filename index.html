@@ -377,7 +377,15 @@
         color: #9ca3af;
       }
 
-      .action-btn {
+      .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap; /* 테이블 전체 줄바꿈 방지 */
+      }
         width: 36px;
         height: 36px;
         padding: 0;
@@ -803,7 +811,7 @@
         }
 
         let html =
-          "<table><thead><tr><th>날짜</th><th>기록자</th><th>대상</th><th>구분</th><th>금액</th><th>작업</th><th>승인</th></tr></thead><tbody>";
+          '<div class="table-responsive"><table><thead><tr><th>날짜</th><th>기록자</th><th>대상</th><th>구분</th><th>금액</th><th>작업</th><th>승인</th></tr></thead><tbody>';
 
         pendingTransactions.forEach((t) => {
           const nameBadge = t.name === "cw" ? "badge-cw" : "badge-dk";
@@ -993,7 +1001,7 @@
         }
 
         let html =
-          "<table><thead><tr><th>날짜</th><th>이름</th><th>구분</th><th>금액</th><th>기록자</th>";
+          '<div class="table-responsive"><table><thead><tr><th>날짜</th><th>이름</th><th>구분</th><th>금액</th><th>기록자</th>';
         if (currentMode === "edit" || currentMode === "delete")
           html += "<th>작업</th>";
         html += "</tr></thead><tbody>";
@@ -1035,7 +1043,7 @@
           html += "</tr>";
         });
 
-        html += "</tbody></table>";
+        html += "</tbody></table></div>";
         container.innerHTML = html;
       }
 
