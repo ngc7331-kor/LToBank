@@ -1148,6 +1148,49 @@
         document.getElementById("deleteModeBtn").onclick = enterDeleteMode;
         document.getElementById("deleteModeBtn").style.display = "inline-block";
         updateHistory();
+        
+        // 🤖 Android 위젯 데이터 동기화
+        syncAndroidWidget();
+      }
+
+      function syncAndroidWidget() {
+        // userEmail, isParent 등 전역변수 활용
+        const userName = getNameDisplay(userEmail);
+        
+        let pendingCount = 0;
+        if (isParent) {
+          // pendingTransactions 배열은 loadPendingTransactions()에서 채워짐.
+          // 여기서 직접 계산하거나, 별도 API로 받아야 하지만, 
+          // 일단 단순화를 위해 현재 로드된 pendingList의 길이로 추정 (부모인 경우만)
+          // *주의*: loadPendingTransactions()가 비동기라 타이밍 이슈 가능성 있음.
+          // 더 정확하게는 loadPendingTransactions SuccessHandler에서 호출해야 함.
+        }
+
+        // 전체 잔액 계산 (cwTotal, dkTotal)
+        // 현재 transactions 배열은 '개인'의 것만 있거나(권한별), 
+        // getTransactions()가 전체를 다 가져오는지 확인 필요.
+        // -> getTransactions()는 권한에 맞는 것만 가져옴.
+        
+        // 따라서, 클라이언트 사이드에서 정확한 전체 잔액을 알기 어려울 수 있음 (자녀의 경우).
+        // 하지만 위젯은 '로그인된 사람' 기준의 뷰를 원함.
+        // 자녀: 본인 잔액만 보이면 됨.
+        // 부모: 둘 다 보여야 함.
+        
+        // 💡 가장 확실한 방법: 서버(GAS)에서 위젯용 데이터를 한 번 더 요청하거나,
+        // loadTransactions() 결과에 전체 요약 정보를 포함시키는 것.
+        // 여기서는 'API 모드'와 동일한 로직을 태우기 위해 google.script.run으로 위젯 데이터를 요청함.
+        
+        google.script.run.withSuccessHandler(function(data) {
+           // Flutter JavascriptChannel로 데이터 전송
+           if (window.Flutter) {
+             window.Flutter.postMessage(JSON.stringify({
+               cwTotal: data.cwTotal,
+               dkTotal: data.dkTotal,
+               pendingCount: data.pendingCount,
+               userName: userName
+             }));
+           }
+        }).getWidgetData(); // Code.gs에 getWidgetData() 함수 활용
       }
 
       // 수정: id -> uniqueId ('cw-5')
