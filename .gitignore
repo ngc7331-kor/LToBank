@@ -1,3 +1,5 @@
 node_modules/
 .DS_Store
 Code_Real.gs
+Code.gs
+index.html
