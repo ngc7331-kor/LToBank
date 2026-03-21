@@ -26,23 +26,23 @@ function getFamilyEmails() {
 function setupScriptProperties() {
   const scriptProperties = PropertiesService.getScriptProperties();
 
-  // 👇 아래에 실제 가족 이메일 주소를 입력하세요.
+  // 👇 사용자님(아빠)의 이메일을 기본 관리자로 설정합니다.
   const REAL_EMAILS = {
-    PICK_PARENT_EMAIL: "아빠_실제_이메일@gmail.com",
-    PICK_CW_EMAIL: "cw_실제_이메일@gmail.com",
-    PICK_DK_EMAIL: "dk_실제_이메일@gmail.com",
+    PICK_PARENT_EMAIL: "taeoh0311@gmail.com", 
+    PICK_CW_EMAIL: "cw_email@example.com",
+    PICK_DK_EMAIL: "dk_email@example.com",
   };
 
   scriptProperties.setProperties(REAL_EMAILS);
-  Logger.log("✅ 이메일 설정이 완료되었습니다! 이제 앱이 정상 작동합니다.");
+  Logger.log("✅ 이메일 설정이 완료되었습니다! 관리자: " + REAL_EMAILS.PICK_PARENT_EMAIL);
 }
 
 // 이메일을 이름(ID)으로 변환 (한글 이름 반환)
 function getNameFromEmail(email) {
   const emails = getFamilyEmails();
-  if (email === emails.parent) return "아빠"; // admin -> 아빠
-  if (email === emails.cw) return "채원"; // cw -> 채원
-  if (email === emails.dk) return "도권"; // dk -> 도권
+  if (email === emails.parent) return "아빠";
+  if (email === emails.cw) return "채원";
+  if (email === emails.dk) return "도권";
   return email;
 }
 
@@ -56,35 +56,74 @@ function getKoreanName(code) {
 // 현재 사용자가 부모(admin)인지 확인
 function isParent() {
   const userEmail = Session.getActiveUser().getEmail();
+  if (!userEmail) return false; // 네이티브 앱 호출 시 이메일이 없을 수 있음
   const emails = getFamilyEmails();
   return userEmail === emails.parent;
 }
 
 // 접근 권한 확인
 function checkPermission(userEmail) {
+  if (!userEmail) return false;
   const emails = getFamilyEmails();
   const allowed = [emails.parent, emails.cw, emails.dk];
   return allowed.includes(userEmail);
 }
 
-// 웹앱 접근 시 실행
+// 웹앱 접근 시 실행 (API 엔드포인트 역할 겸용)
 function doGet(e) {
   const userEmail = Session.getActiveUser().getEmail();
 
-  // 🤖 [v83] 네이티브 위젯용 JSON 응답
-  if (e && e.parameter && e.parameter.action === 'widget') {
+  // 🤖 [v5.4] API 요청 처리 (Native App용 JSON 응답)
+  if (e && e.parameter && e.parameter.action) {
+    const action = e.parameter.action;
+    
+    // 권한 확인 (사용자 이메일 기반)
     if (!checkPermission(userEmail)) {
-      return ContentService.createTextOutput(JSON.stringify({ error: "Unauthorized" }))
-        .setMimeType(ContentService.MimeType.JSON);
+      return ContentService.createTextOutput(JSON.stringify({ 
+        error: "Unauthorized", 
+        email: userEmail || "Anonymous",
+        hint: "관리자 설정(setupScriptProperties)을 확인하세요."
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
     }
-    const data = getWidgetData();
-    return ContentService.createTextOutput(JSON.stringify(data))
+
+    let result;
+    try {
+      switch (action) {
+        case 'widget':
+          result = getWidgetData();
+          break;
+        case 'transactions':
+          result = getTransactions();
+          break;
+        case 'pending':
+          result = getPendingTransactions();
+          break;
+        case 'approve':
+          result = approveTransaction(Number(e.parameter.rowId));
+          break;
+        case 'reject':
+          result = rejectTransaction(Number(e.parameter.rowId));
+          break;
+        case 'request':
+          const tx = JSON.parse(e.parameter.data);
+          result = addTransaction(tx);
+          break;
+        default:
+          result = { error: "Unknown action" };
+      }
+    } catch (err) {
+      result = { error: err.toString() };
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  // 🌐 기존 웹 UI 브라우저 접근 처리
   if (!checkPermission(userEmail)) {
     return HtmlService.createHtmlOutput(
-      "접근 권한이 없습니다. 허용된 계정으로 로그인해주세요.",
+      "접근 권한이 없습니다. (" + (userEmail || "로그인 필요") + ")<br>관리자 계정으로 다시 로그인해주세요."
     );
   }
 
