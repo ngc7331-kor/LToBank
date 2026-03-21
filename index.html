@@ -32,8 +32,72 @@
 
   <title>lto_bank_app</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    #loading-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0F172A;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.1);
+      border-top: 5px solid #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    .message {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
+  <div id="loading-indicator">
+    <div class="spinner"></div>
+    <div class="message">금고 열쇠를 찾는 중입니다...<br>(동전 하나하나 세고 있어요! 💰)</div>
+  </div>
+
+  <script>
+    window.addEventListener('load', function(ev) {
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.addedNodes.length > 0) {
+            for (var i = 0; i < mutation.addedNodes.length; i++) {
+              if (mutation.addedNodes[i].nodeName === 'FLT-GLASS-PANE') {
+                var loader = document.getElementById('loading-indicator');
+                if (loader) loader.remove();
+                observer.disconnect();
+              }
+            }
+          }
+        });
+      });
+      observer.observe(document.body, { childList: true });
+      setTimeout(function() {
+        var loader = document.getElementById('loading-indicator');
+        if (loader) loader.remove();
+      }, 30000);
+    });
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
