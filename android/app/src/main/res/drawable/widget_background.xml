@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <!-- LToBank 전용 남색(#0F172A) + 80% 투명도(#CC) -->
+            <solid android:color="#CC0F172A" />
+            <corners android:radius="16dp" />
+            
+            <!-- 우리집 세금 스타일의 얇은 흰색 테두리 -->
+            <stroke
+                android:width="0.5dp"
+                android:color="#33FFFFFF" />
+        </shape>
+    </item>
+</layer-list>
