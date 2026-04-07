@@ -95,7 +95,15 @@ class LToBankWidget : AppWidgetProvider() {
 
                 views.setTextViewText(R.id.txt_widget_title, "L.To Bank")
                 views.setTextViewText(R.id.txt_pending_count, pendingCount.toString())
-                views.setViewVisibility(R.id.layout_badge, View.VISIBLE)
+                
+                // 역할에 따른 텍스트 분기 (부모: 승인 대기, 자녀: 승인 요청중)
+                if (userRole == "parent") {
+                    views.setTextViewText(R.id.txt_pending_label, "승인 대기")
+                } else {
+                    views.setTextViewText(R.id.txt_pending_label, "승인 요청중")
+                }
+                
+                views.setViewVisibility(R.id.layout_badge, if (pendingCount > 0) View.VISIBLE else View.GONE)
 
                 when (userRole) {
                     "cw" -> {
