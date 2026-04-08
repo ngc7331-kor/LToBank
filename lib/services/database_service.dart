@@ -94,4 +94,16 @@ class DatabaseService {
     });
   }
 
+  // 🗑️ 승인 대기 항목 삭제 (취소)
+  Future<void> deletePendingTransaction(String id) async {
+    await _db.collection('approvals').doc(id).delete();
+  }
+
+  // ✏️ 승인 대기 항목 수정
+  Future<void> updatePendingTransaction(String id, BankTransaction tx) async {
+    await _db.collection('approvals').doc(id).update({
+      ...tx.toMap(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
 }

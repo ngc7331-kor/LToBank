@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+import 'auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'database_service.dart';
 import 'widget_service.dart';
@@ -65,16 +67,15 @@ class WidgetSyncService {
     _pendingSub?.cancel();
   }
 
-  void _updateWidget() {
+  Future<void> _updateWidget() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    String role = 'parent';
-    if (user.email == 'chaewon@example.com') {
-      role = 'cw';
-    } else if (user.email == 'dokwon@example.com') {
-      role = 'dk';
-    }
+    final email = user.email?.toLowerCase();
+    final role = AuthService.emailRoleMap[email] ?? 'parent';
+    
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('flutter.userRole', role);
 
     WidgetService.updateWidgetData(
       pendingCount: _pendingCount,

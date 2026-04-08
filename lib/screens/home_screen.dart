@@ -175,11 +175,12 @@ class _HomeScreenState extends State<HomeScreen> {
             final cwData = cwSnapshot.data ?? BankData(name: '채원', currentBalance: 0, totalBalance: 0, interest: 0);
             final dkData = dkSnapshot.data ?? BankData(name: '도권', currentBalance: 0, totalBalance: 0, interest: 0);
 
-            final List<Widget> cards = [];
             final email = _effectiveEmail ?? '';
-            final isCW = email.contains('cw');
-            final isDK = email.contains('dk');
+            final role = AuthService.emailRoleMap[email];
+            final isCW = role == 'cw';
+            final isDK = role == 'dk';
 
+            final List<Widget> cards = [];
             if (_isParent || isCW) {
               cards.add(BalanceCard(
                 data: cwData, 
@@ -267,6 +268,36 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
+                // Antigravity 실시간 연동 상태 표시 (Option 1 연동 확인용)
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Colors.greenAccent.shade700,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.greenAccent.withOpacity(0.5),
+                            blurRadius: 4,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Antigravity 실시간 연동 중',
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 11,
+                        color: isDark ? Colors.greenAccent.shade400 : Colors.greenAccent.shade700,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
                 Text(
                   '오늘도 스마트한 저축 습관을 응원해요! 💰',
                   style: GoogleFonts.notoSansKr(
@@ -329,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '승인 대기',
+                        '승인 대기', // 부모 계정일 때 "승인 대기"
                         style: GoogleFonts.notoSansKr(
                           color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
                           fontWeight: FontWeight.w800,
@@ -360,7 +391,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMyPendingRequests() {
     if (_isParent) return const SizedBox.shrink();
 
-    final bankId = _effectiveEmail?.contains('cw') == true ? 'cw' : (_effectiveEmail?.contains('dk') == true ? 'dk' : null);
+    final role = AuthService.emailRoleMap[_effectiveEmail];
+    final bankId = (role == 'cw' || role == 'dk') ? role : null;
+    
     if (bankId == null) return const SizedBox.shrink();
 
     return StreamBuilder<List<BankTransaction>>(
@@ -371,51 +404,79 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 24),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F172A).withOpacity(0.6) : const Color(0xFFEFF6FF),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDark ? const Color(0xFF1E40AF) : const Color(0xFFBFDBFE)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E40AF).withOpacity(0.3) : const Color(0xFFDBEAFE),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.hourglass_empty_rounded, color: Color(0xFF3B82F6), size: 24),
+        return StreamBuilder<List<BankTransaction>>(
+          stream: db.getPendingTransactions(), // 자녀도 approvals 컬렉션을 봅니다.
+          builder: (context, approvalsSnapshot) {
+            final myPendingCount = approvalsSnapshot.data
+                    ?.where((tx) => tx.name == bankId) // 내 계좌(cw/dk) 요청만 필터링
+                    .length ??
+                0;
+
+            if (myPendingCount == 0) return const SizedBox.shrink();
+
+            return GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ApprovalScreen()),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF0F172A).withOpacity(0.6)
+                      : const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: isDark ? const Color(0xFF1E40AF) : const Color(0xFFBFDBFE)),
+                ),
+                child: Row(
                   children: [
-                    Text(
-                      '승인 요청 중',
-                      style: GoogleFonts.notoSansKr(
-                        color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF),
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF1E40AF).withOpacity(0.3)
+                            : const Color(0xFFDBEAFE),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.hourglass_empty_rounded,
+                          color: Color(0xFF3B82F6), size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '승인 요청중', // 자녀 계정일 때는 "승인 요청중"
+                            style: GoogleFonts.notoSansKr(
+                              color: isDark
+                                  ? const Color(0xFF93C5FD)
+                                  : const Color(0xFF1E40AF),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '아빠의 승인을 기다리는 요청이 $myPendingCount건 있어요.',
+                            style: GoogleFonts.notoSansKr(
+                              color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '내가 요청한 $myPendingCount건을 부모님이 확인 중이에요.',
-                      style: GoogleFonts.notoSansKr(
-                        color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Icon(Icons.chevron_right_rounded, 
+                      color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6)),
                   ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -457,8 +518,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
 
                 final email = _effectiveEmail ?? '';
-                final isCW = email.contains('cw');
-                final isDK = email.contains('dk');
+                final role = AuthService.emailRoleMap[email];
+                final isCW = role == 'cw';
+                final isDK = role == 'dk';
                 
                 List<BankTransaction> allTxs = [];
                 if (_isParent || isCW) {
@@ -496,9 +558,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _getRealName(String? email) {
     if (email == null) return '사용자';
-    if (email == 'father@example.com') return '태오';
-    if (email == 'chaewon@example.com') return '채원';
-    if (email == 'dokwon@example.com') return '도권';
+    final normalizedEmail = email.toLowerCase();
+    if (normalizedEmail == 'taeoh0311@gmail.com') return '태오';
+    if (normalizedEmail == 'ngc7331cw@gmail.com' || normalizedEmail == 'taeoh0317@gmail.com') return '채원';
+    if (normalizedEmail == 'ngc7331dk@gmail.com' || normalizedEmail == 'taeoh0318@gmail.com') return '도권';
     return user?.displayName?.split(' ').first ?? '사용자';
   }
 }

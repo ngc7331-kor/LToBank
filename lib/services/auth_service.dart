@@ -9,6 +9,15 @@ class AuthService {
     serverClientId: '35323267785-oqueflp0he6ot8jphtq8dqobpt6k2hp7.apps.googleusercontent.com',
   );
 
+  // 👤 이메일-역할 매매핑 (전체 주소 기반 정확한 인식)
+  static const Map<String, String> emailRoleMap = {
+    'taeoh0311@gmail.com': 'admin',
+    'ngc7331cw@gmail.com': 'cw',
+    'taeoh0317@gmail.com': 'cw', // 채원 새 계정
+    'ngc7331dk@gmail.com': 'dk',
+    'taeoh0318@gmail.com': 'dk', // 도권 새 계정
+  };
+
   // 🚪 구글 로그인
   Future<User?> signInWithGoogle() async {
     try {
@@ -30,33 +39,26 @@ class AuthService {
 
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
-      print('Firebase Sign-In successful: \${userCredential.user?.email}');
+      print('Firebase Sign-In successful: ${userCredential.user?.email}');
       
       final user = userCredential.user;
       if (user != null) {
-        // 🛡️ [Security] 진짜 이메일 화이트리스트 체크 (3인만 허용)
-        final allowedEmails = [
-          'father@example.com', // 아빠
-          'chaewon@example.com', // 채원
-          'dokwon@example.com', // 도권
-        ];
-
-        if (!allowedEmails.contains(user.email)) {
-          print('Unauthorized access attempt: \${user.email}');
+        final email = user.email?.toLowerCase() ?? '';
+        // 🛡️ [Security] 이메일 화이트리스트 체크 (대소문자 무시)
+        if (!emailRoleMap.containsKey(email)) {
+          print('Unauthorized access attempt: $email');
           await signOut(); // 즉시 로그아웃
           throw FirebaseAuthException(
             code: 'unauthorized-user',
-            message: '허용된 사용자가 아닙니다. (가족 전용 계정으로 로그인해주세요)',
+            message: '허용된 사용자가 아닙니다. ($email)',
           );
         }
 
         try {
           final token = await FCMService().getToken();
           if (token != null) {
-            // 이메일 기반 역할 판별
-            String role = 'admin';
-            if (user.email == 'chaewon@example.com') role = 'cw';
-            if (user.email == 'dokwon@example.com') role = 'dk';
+            // 이메일 기반 역할 판별 (Map 참조)
+            String role = emailRoleMap[email] ?? 'admin';
 
             await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
               'email': user.email,
@@ -66,7 +68,7 @@ class AuthService {
             }, SetOptions(merge: true));
           }
         } catch (e) {
-          print('FCM Token Save Error: \$e');
+          print('FCM Token Save Error: $e');
         }
       }
       
@@ -90,5 +92,5 @@ class AuthService {
   String? get userEmail => _auth.currentUser?.email;
 
   // 👨‍👩‍👧‍👦 권한 확인 (간이 버전, 실제로는 Firestore users 컬렉션 권장)
-  bool get isParent => userEmail == 'father@example.com'; // 사용자님 이메일 기준
+  bool get isParent => userEmail == 'taeoh0311@gmail.com'; // 사용자님 이메일 기준
 }

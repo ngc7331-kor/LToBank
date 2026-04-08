@@ -26,7 +26,7 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text(isParent ? '승인 대기' : '승인 대기 중', 
+        title: Text(isParent ? '승인 대기' : '승인 요청중', 
           style: GoogleFonts.notoSansKr(fontWeight: FontWeight.w900, fontSize: 18)),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -286,9 +286,10 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
   }
 
   String _getDisplayName(String email) {
-    if (email == 'chaewon@example.com' || email == 'cw') return '채원';
-    if (email == 'dokwon@example.com' || email == 'dk') return '도권';
-    if (email == 'father@example.com') return '태오';
+    final normalizedEmail = email.toLowerCase();
+    if (normalizedEmail == 'ngc7331cw@gmail.com' || normalizedEmail == 'taeoh0317@gmail.com' || normalizedEmail == 'cw') return '채원';
+    if (normalizedEmail == 'ngc7331dk@gmail.com' || normalizedEmail == 'taeoh0318@gmail.com' || normalizedEmail == 'dk') return '도권';
+    if (normalizedEmail == 'taeoh0311@gmail.com') return '태오';
     return email.split('@').first;
   }
 }

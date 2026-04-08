@@ -7,20 +7,44 @@ import '../services/auth_service.dart';
 import '../services/fcm_service.dart';
 
 class RequestTransactionScreen extends StatefulWidget {
-  const RequestTransactionScreen({super.key});
+  final BankTransaction? initialTransaction;
+  const RequestTransactionScreen({super.key, this.initialTransaction});
 
   @override
   State<RequestTransactionScreen> createState() => _RequestTransactionScreenState();
 }
 
 class _RequestTransactionScreenState extends State<RequestTransactionScreen> {
-  final _amountController = TextEditingController();
+  late final TextEditingController _amountController;
+  late final TextEditingController _dateController;
   final db = DatabaseService();
   final auth = AuthService();
   
+  DateTime _selectedDate = DateTime.now();
   String _selectedType = '입금';
   String _selectedTarget = 'cw';
   bool _isLoading = false;
+
+  bool get _isEditMode => widget.initialTransaction != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final initTx = widget.initialTransaction;
+    
+    _amountController = TextEditingController(text: initTx?.amount.toString() ?? '');
+    _dateController = TextEditingController(text: initTx?.date ?? DateTime.now().toString().split(' ')[0]);
+    
+    if (initTx != null) {
+      _selectedType = initTx.type;
+      _selectedTarget = initTx.name;
+      try {
+        _selectedDate = DateTime.parse(initTx.date);
+      } catch (e) {
+        _selectedDate = DateTime.now();
+      }
+    }
+  }
 
   void _submitRequest() async {
     final amountText = _amountController.text.replaceAll(',', '');
@@ -36,8 +60,8 @@ class _RequestTransactionScreenState extends State<RequestTransactionScreen> {
     setState(() => _isLoading = true);
 
     final tx = BankTransaction(
-      id: '',
-      date: DateTime.now().toString().split(' ')[0],
+      id: _isEditMode ? widget.initialTransaction!.id : '',
+      date: _dateController.text,
       name: _selectedTarget,
       type: _selectedType,
       amount: amount,
@@ -47,31 +71,36 @@ class _RequestTransactionScreenState extends State<RequestTransactionScreen> {
     );
 
     try {
-      await db.requestTransaction(tx);
+      if (_isEditMode) {
+        await db.updatePendingTransaction(tx.id, tx);
+      } else {
+        await db.requestTransaction(tx);
+      }
       
-      // [요청] 관리자(태오)에게 FCM 푸시 발송
+      // [요청/수정] 관리자(태오)에게 FCM 푸시 발송
       try {
-        final amountStr = amount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '\${m[1]},');
+        final amountStr = amount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
         final nameStr = _selectedTarget == 'cw' ? '채원' : '도권';
+        final actionStr = _isEditMode ? '수정' : '요청';
         await FCMService().sendPushMessage(
           targetRoleOrName: 'admin',
-          title: '거래 승인 요청',
-          body: '$nameStr이가 $_selectedType ${amountStr}원을 거래 승인 요청하였습니다.',
+          title: '거래 승인 $actionStr',
+          body: '$nameStr이가 $_selectedType ${amountStr}원을 거래 $actionStr하였습니다.',
         );
       } catch (e) {
-        print('Push notification error: \$e');
+        print('Push notification error: $e');
       }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('🎉 거래 요청이 완료되었습니다! 아빠의 승인을 기다려주세요.')),
+          SnackBar(content: Text(_isEditMode ? '🎉 거래 수정이 완료되었습니다!' : '🎉 거래 요청이 완료되었습니다! 아빠의 승인을 기다려주세요.')),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('❌ 요청 중 오류 발생: $e')),
+          SnackBar(content: Text('❌ 작업 중 오류 발생: $e')),
         );
       }
     } finally {
@@ -84,7 +113,7 @@ class _RequestTransactionScreenState extends State<RequestTransactionScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('거래 등록', style: GoogleFonts.notoSansKr(fontWeight: FontWeight.bold)),
+        title: Text(_isEditMode ? '거래 수정' : '거래 등록', style: GoogleFonts.notoSansKr(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -94,6 +123,10 @@ class _RequestTransactionScreenState extends State<RequestTransactionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildSectionLabel('거래 일자'),
+            const SizedBox(height: 12),
+            _buildDateInput(),
+            const SizedBox(height: 32),
             _buildSectionLabel('거래 종류'),
             const SizedBox(height: 12),
             _buildSegmentedControl(_selectedType, ['입금', '출금'], (val) {
@@ -110,6 +143,40 @@ class _RequestTransactionScreenState extends State<RequestTransactionScreen> {
             const SizedBox(height: 48),
             _buildSubmitButton(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateInput() {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _selectedDate,
+          firstDate: DateTime(2020),
+          lastDate: DateTime(2101),
+        );
+        if (picked != null) {
+          setState(() {
+            _selectedDate = picked;
+            _dateController.text = picked.toString().split(' ')[0];
+          });
+        }
+      },
+      child: TextField(
+        controller: _dateController,
+        enabled: false, // 터치로 캘린더 띄우기 위해 비활성화 (필요시 직접 입력 가능하게 변경 가능)
+        style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+        decoration: InputDecoration(
+          prefixIcon: const Icon(Icons.calendar_today_rounded, color: Color(0xFF6366F1), size: 20),
+          filled: true,
+          fillColor: const Color(0xFFF8FAFC),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
         ),
       ),
     );
