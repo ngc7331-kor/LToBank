@@ -150,22 +150,30 @@
                     android:textColor="#B3FFFFFF"
                     android:textSize="12sp" />
 
-                <TextView
-                    android:id="@+id/txt_left_amount"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="₩ 0"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-                
-                <TextView
-                    android:id="@+id/txt_left_interest"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="이자: ₩ 0"
-                    android:textColor="#CCFFFFFF"
-                    android:textSize="10sp" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/txt_left_amount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₩ 0"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txt_left_interest"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="(+0)"
+                        android:textColor="#CCFFFFFF"
+                        android:textSize="9sp" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Right Account (도권) -->
@@ -185,22 +193,30 @@
                     android:textColor="#B3FFFFFF"
                     android:textSize="12sp" />
 
-                <TextView
-                    android:id="@+id/txt_right_amount"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="₩ 0"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-                
-                <TextView
-                    android:id="@+id/txt_right_interest"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="이자: ₩ 0"
-                    android:textColor="#CCFFFFFF"
-                    android:textSize="10sp" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/txt_right_amount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₩ 0"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txt_right_interest"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="(+0)"
+                        android:textColor="#CCFFFFFF"
+                        android:textSize="9sp" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
