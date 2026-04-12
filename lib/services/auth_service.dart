@@ -18,6 +18,18 @@ class AuthService {
     'taeoh0318@gmail.com': 'dk', // 도권 새 계정
   };
 
+  // 👤 이메일 기반 이름 변환 (중앙 집중 관리)
+  static String getNameByEmail(String? email) {
+    if (email == null) return '사용자';
+    final normalized = email.toLowerCase();
+    
+    if (normalized == 'taeoh0311@gmail.com') return '태오';
+    if (normalized == 'ngc7331cw@gmail.com' || normalized == 'taeoh0317@gmail.com' || normalized == 'cw') return '채원';
+    if (normalized == 'ngc7331dk@gmail.com' || normalized == 'taeoh0318@gmail.com' || normalized == 'dk') return '도권';
+    
+    return email.split('@').first;
+  }
+
   // 🚪 구글 로그인
   Future<User?> signInWithGoogle() async {
     try {
@@ -39,11 +51,12 @@ class AuthService {
 
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
-      print('Firebase Sign-In successful: ${userCredential.user?.email}');
-      
       final user = userCredential.user;
+      
       if (user != null) {
         final email = user.email?.toLowerCase() ?? '';
+        print('Firebase Sign-In successful: $email');
+
         // 🛡️ [Security] 이메일 화이트리스트 체크 (대소문자 무시)
         if (!emailRoleMap.containsKey(email)) {
           print('Unauthorized access attempt: $email');
@@ -88,9 +101,10 @@ class AuthService {
     await _auth.signOut();
   }
 
-  // 👤 현재 사용자 이메일
+  // 👤 현재 사용자 정보
   String? get userEmail => _auth.currentUser?.email;
+  String get userRealName => getNameByEmail(userEmail);
 
-  // 👨‍👩‍👧‍👦 권한 확인 (간이 버전, 실제로는 Firestore users 컬렉션 권장)
-  bool get isParent => userEmail == 'taeoh0311@gmail.com'; // 사용자님 이메일 기준
+  // 👨‍👩‍👧‍👦 권한 확인 (사용자님 이메일 기준)
+  bool get isParent => (userEmail?.toLowerCase() ?? '') == 'taeoh0311@gmail.com'; 
 }

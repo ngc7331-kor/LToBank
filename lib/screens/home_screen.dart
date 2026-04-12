@@ -267,37 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 4),
-                // Antigravity 실시간 연동 상태 표시 (Option 1 연동 확인용)
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Colors.greenAccent.shade700,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.greenAccent.withOpacity(0.5),
-                            blurRadius: 4,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Antigravity 실시간 연동 중',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 11,
-                        color: isDark ? Colors.greenAccent.shade400 : Colors.greenAccent.shade700,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 12),
                 Text(
                   '오늘도 스마트한 저축 습관을 응원해요! 💰',
                   style: GoogleFonts.notoSansKr(
@@ -557,11 +527,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _getRealName(String? email) {
-    if (email == null) return '사용자';
-    final normalizedEmail = email.toLowerCase();
-    if (normalizedEmail == 'taeoh0311@gmail.com') return '태오';
-    if (normalizedEmail == 'ngc7331cw@gmail.com' || normalizedEmail == 'taeoh0317@gmail.com') return '채원';
-    if (normalizedEmail == 'ngc7331dk@gmail.com' || normalizedEmail == 'taeoh0318@gmail.com') return '도권';
-    return user?.displayName?.split(' ').first ?? '사용자';
+    return AuthService.getNameByEmail(email);
   }
 }

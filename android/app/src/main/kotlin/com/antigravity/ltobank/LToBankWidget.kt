@@ -97,27 +97,31 @@ class LToBankWidget : AppWidgetProvider() {
                 views.setTextViewText(R.id.txt_pending_count, pendingCount.toString())
                 
                 // 역할에 따른 텍스트 분기 (부모: 승인 대기, 자녀: 승인 요청중)
-                if (userRole == "parent") {
-                    views.setTextViewText(R.id.txt_pending_label, "승인 대기")
-                } else {
-                    views.setTextViewText(R.id.txt_pending_label, "승인 요청중")
-                }
+                val labelText = if (userRole == "parent") "승인 대기" else "승인 요청중"
+                views.setTextViewText(R.id.txt_pending_label, labelText)
                 
-                views.setViewVisibility(R.id.layout_badge, if (pendingCount > 0) View.VISIBLE else View.GONE)
+                // v48: 0건이더라도 명시적으로 보여주기 위해 항상 VISIBLE 유지
+                views.setViewVisibility(R.id.layout_badge, View.VISIBLE)
 
-                when (userRole) {
-                    "cw" -> {
+                // v48: 역할별 레이아웃 최적화
+                if (userRole == "parent") {
+                    // 부모 모드: 세로 배치 (1 = vertical)
+                    views.setInt(R.id.layout_accounts, "setOrientation", 1)
+                    views.setViewVisibility(R.id.layout_left, View.VISIBLE)
+                    views.setViewVisibility(R.id.layout_right, View.VISIBLE)
+                    views.setViewVisibility(R.id.txt_left_name, View.VISIBLE)
+                    views.setViewVisibility(R.id.txt_right_name, View.VISIBLE)
+                } else {
+                    // 자녀 모드: 가로 배치 (0 = horizontal)
+                    views.setInt(R.id.layout_accounts, "setOrientation", 0)
+                    if (userRole == "cw") {
                         views.setViewVisibility(R.id.layout_left, View.VISIBLE)
                         views.setViewVisibility(R.id.layout_right, View.GONE)
-                        // 자녀 모드일 때 weight를 조절할 수 없으므로, 레이아웃 내부 gravity로 중앙 정렬 유도
-                    }
-                    "dk" -> {
+                        views.setViewVisibility(R.id.txt_left_name, View.GONE) // 자녀 모드: 이름 숨김
+                    } else if (userRole == "dk") {
                         views.setViewVisibility(R.id.layout_left, View.GONE)
                         views.setViewVisibility(R.id.layout_right, View.VISIBLE)
-                    }
-                    else -> {
-                        views.setViewVisibility(R.id.layout_left, View.VISIBLE)
-                        views.setViewVisibility(R.id.layout_right, View.VISIBLE)
+                        views.setViewVisibility(R.id.txt_right_name, View.GONE) // 자녀 모드: 이름 숨김
                     }
                 }
 

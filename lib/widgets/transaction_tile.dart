@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/bank_model.dart';
+import '../services/auth_service.dart';
 
 class TransactionTile extends StatelessWidget {
   final BankTransaction tx;
@@ -10,7 +11,7 @@ class TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isDeposit = tx.type == '입금';
-    final targetName = tx.name == 'cw' ? '채원' : tx.name == 'dk' ? '도권' : tx.name;
+    final targetName = AuthService.getNameByEmail(tx.name);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tileColor = isDark ? const Color(0xFF1E293B) : Colors.white;

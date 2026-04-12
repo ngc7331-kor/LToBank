@@ -20,8 +20,9 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
   @override
   Widget build(BuildContext context) {
     final isParent = auth.isParent;
-    final email = auth.userEmail ?? '';
-    final myId = email.contains('cw') ? 'cw' : (email.contains('dk') ? 'dk' : null);
+    final email = (auth.userEmail ?? '').toLowerCase();
+    final role = AuthService.emailRoleMap[email];
+    final myId = (role == 'cw' || role == 'dk') ? role : null;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -286,10 +287,6 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
   }
 
   String _getDisplayName(String email) {
-    final normalizedEmail = email.toLowerCase();
-    if (normalizedEmail == 'ngc7331cw@gmail.com' || normalizedEmail == 'taeoh0317@gmail.com' || normalizedEmail == 'cw') return '채원';
-    if (normalizedEmail == 'ngc7331dk@gmail.com' || normalizedEmail == 'taeoh0318@gmail.com' || normalizedEmail == 'dk') return '도권';
-    if (normalizedEmail == 'taeoh0311@gmail.com') return '태오';
-    return email.split('@').first;
+    return AuthService.getNameByEmail(email);
   }
 }
