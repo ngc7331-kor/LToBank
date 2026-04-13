@@ -20,6 +20,7 @@ class WidgetSyncService {
   int _dkTotal = 0;
   int _dkInterest = 0;
   int _pendingCount = 0;
+  List<BankTransaction> _allPendingTransactions = [];
 
   bool _isInitialized = false;
 
@@ -58,6 +59,7 @@ class WidgetSyncService {
 
     // 2. 전체 승인 대기 내역 스트림 (도권 데이터 누락 해결 핵심)
     _pendingSub = _db.getPendingTransactions().listen((txs) {
+      _allPendingTransactions = txs;
       _pendingCount = txs.length;
       _updateWidget(); // 데이터 올 때마다 확실히 위젯 갱신
     }, onError: (e) => print('WidgetSync Error (Pending): $e'));
@@ -67,6 +69,7 @@ class WidgetSyncService {
     _cwSub?.cancel();
     _dkSub?.cancel();
     _pendingSub?.cancel();
+    _allPendingTransactions = [];
   }
 
   Future<void> _updateWidget() async {
@@ -79,12 +82,11 @@ class WidgetSyncService {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('flutter.userRole', role);
 
-    // v48: 자녀 모드일 경우 본인의 '승인 요청중' 건수만 필터링 (부모는 전체)
+    // v50: 자녀 모드일 경우 본인의 '승인 요청중' 건수만 필터링 (역할 ID -> 실제 이름 매핑)
     int displayPendingCount = _pendingCount;
     if (role == 'cw' || role == 'dk') {
-      // DatabaseService에서 가져온 최신 pending 내역 중 본인 것만 필터링
-      final allPending = await _db.getPendingTransactions().first;
-      displayPendingCount = allPending.where((tx) => tx.name == role).length;
+      final realName = AuthService.getNameByEmail(role);
+      displayPendingCount = _allPendingTransactions.where((tx) => tx.name == realName).length;
     }
 
     WidgetService.updateWidgetData(
