@@ -267,7 +267,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     letterSpacing: -0.5,
                   ),
                 ),
+<<<<<<< HEAD
                 const SizedBox(height: 12),
+=======
+                const SizedBox(height: 4),
+                const SizedBox(height: 4),
+                Text(
+                  'L.To Bank 디지털 통장입니다.',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 11,
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+>>>>>>> origin/main
                 Text(
                   '오늘도 스마트한 저축 습관을 응원해요! 💰',
                   style: GoogleFonts.notoSansKr(
