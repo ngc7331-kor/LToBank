@@ -96,19 +96,15 @@ class LToBankWidget : AppWidgetProvider() {
 
                     views.setTextViewText(R.id.txt_widget_title, "L.To Bank")
                     
-                    // 🏷️ 문구 수정: "승인 요청중: n건"
-                    views.setTextViewText(R.id.txt_pending_label, "승인 요청중:")
-                    views.setTextViewText(R.id.txt_pending_count, "${pendingCount}건")
-                    
-                    views.setViewVisibility(R.id.layout_badge, View.VISIBLE)
-
-                    // v50: 레이아웃 안정성을 위해 setOrientation 제거 (XML 기본값 유지)
+                    // 🏷️ 역할별 문구 차별화
                     if (userRole == "parent") {
+                        views.setTextViewText(R.id.txt_pending_label, "승인대기:")
                         views.setViewVisibility(R.id.layout_left, View.VISIBLE)
                         views.setViewVisibility(R.id.layout_right, View.VISIBLE)
                         views.setViewVisibility(R.id.txt_left_name, View.VISIBLE)
                         views.setViewVisibility(R.id.txt_right_name, View.VISIBLE)
                     } else {
+                        views.setTextViewText(R.id.txt_pending_label, "승인 요청중:")
                         if (userRole == "cw") {
                             views.setViewVisibility(R.id.layout_left, View.VISIBLE)
                             views.setViewVisibility(R.id.layout_right, View.GONE)
@@ -119,11 +115,19 @@ class LToBankWidget : AppWidgetProvider() {
                             views.setViewVisibility(R.id.txt_right_name, View.GONE)
                         }
                     }
+                    
+                    views.setTextViewText(R.id.txt_pending_count, "${pendingCount}건")
+                    views.setViewVisibility(R.id.layout_badge, View.VISIBLE)
 
+                    // 이자 텍스트 최적화 (Dart에서 '이자: ₩ n'으로 오므로 괄호 처리 등 검토)
+                    // 만약 Dart에서 온 값이 이미 '이자: ₩ n' 형태라면 그대로 표시하거나 깔끔하게 가공
+                    val cleanCwInterest = cwInterest.replace("이자: ", "")
+                    val cleanDkInterest = dkInterest.replace("이자: ", "")
+                    
                     views.setTextViewText(R.id.txt_left_amount, cwTotal)
-                    views.setTextViewText(R.id.txt_left_interest, cwInterest)
+                    views.setTextViewText(R.id.txt_left_interest, "($cleanCwInterest)")
                     views.setTextViewText(R.id.txt_right_amount, dkTotal)
-                    views.setTextViewText(R.id.txt_right_interest, dkInterest)
+                    views.setTextViewText(R.id.txt_right_interest, "($cleanDkInterest)")
                     views.setTextViewText(R.id.txt_last_updated, "최종 확인: $updateTime")
                 }
 

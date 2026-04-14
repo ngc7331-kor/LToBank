@@ -267,21 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     letterSpacing: -0.5,
                   ),
                 ),
-<<<<<<< HEAD
-                const SizedBox(height: 12),
-=======
                 const SizedBox(height: 4),
-                const SizedBox(height: 4),
-                Text(
-                  'L.To Bank 디지털 통장입니다.',
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 11,
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
->>>>>>> origin/main
                 Text(
                   '오늘도 스마트한 저축 습관을 응원해요! 💰',
                   style: GoogleFonts.notoSansKr(
@@ -297,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
   Widget _buildPendingApprovalAlert() {
     if (!_isParent) return const SizedBox.shrink();
 
@@ -381,86 +368,78 @@ class _HomeScreenState extends State<HomeScreen> {
     if (bankId == null) return const SizedBox.shrink();
 
     return StreamBuilder<List<BankTransaction>>(
-      stream: db.getTransactions(bankId),
-      builder: (context, snapshot) {
-        final myPendingCount = snapshot.data?.where((tx) => tx.status == 'pending').length ?? 0;
+      stream: db.getPendingTransactions(), // 자녀도 approvals 컬렉션을 봅니다.
+      builder: (context, approvalsSnapshot) {
+        final myPendingCount = approvalsSnapshot.data
+                ?.where((tx) => tx.name == bankId) // 내 계좌(cw/dk) 요청만 필터링
+                .length ??
+            0;
+
         if (myPendingCount == 0) return const SizedBox.shrink();
 
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
-        return StreamBuilder<List<BankTransaction>>(
-          stream: db.getPendingTransactions(), // 자녀도 approvals 컬렉션을 봅니다.
-          builder: (context, approvalsSnapshot) {
-            final myPendingCount = approvalsSnapshot.data
-                    ?.where((tx) => tx.name == bankId) // 내 계좌(cw/dk) 요청만 필터링
-                    .length ??
-                0;
-
-            if (myPendingCount == 0) return const SizedBox.shrink();
-
-            return GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ApprovalScreen()),
-              ),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF0F172A).withOpacity(0.6)
-                      : const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: isDark ? const Color(0xFF1E40AF) : const Color(0xFFBFDBFE)),
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ApprovalScreen()),
+          ),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 24),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xFF0F172A).withOpacity(0.6)
+                  : const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: isDark ? const Color(0xFF1E40AF) : const Color(0xFFBFDBFE)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF1E40AF).withOpacity(0.3)
+                        : const Color(0xFFDBEAFE),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.hourglass_empty_rounded,
+                      color: Color(0xFF3B82F6), size: 24),
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF1E40AF).withOpacity(0.3)
-                            : const Color(0xFFDBEAFE),
-                        borderRadius: BorderRadius.circular(12),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '승인 요청중', // 자녀 계정일 때는 "승인 요청중"
+                        style: GoogleFonts.notoSansKr(
+                          color: isDark
+                              ? const Color(0xFF93C5FD)
+                              : const Color(0xFF1E40AF),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
                       ),
-                      child: const Icon(Icons.hourglass_empty_rounded,
-                          color: Color(0xFF3B82F6), size: 24),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '승인 요청중', // 자녀 계정일 때는 "승인 요청중"
-                            style: GoogleFonts.notoSansKr(
-                              color: isDark
-                                  ? const Color(0xFF93C5FD)
-                                  : const Color(0xFF1E40AF),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '아빠의 승인을 기다리는 요청이 $myPendingCount건 있어요.',
-                            style: GoogleFonts.notoSansKr(
-                              color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 2),
+                      Text(
+                        '아빠의 승인을 기다리는 요청이 $myPendingCount건 있어요.',
+                        style: GoogleFonts.notoSansKr(
+                          color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    Icon(Icons.chevron_right_rounded, 
-                      color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6)),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+                Icon(Icons.chevron_right_rounded, 
+                  color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6)),
+              ],
+            ),
+          ),
         );
       },
     );

@@ -125,7 +125,7 @@
         </RelativeLayout>
 
         <!-- Bottom Row: Accounts (Balances) -->
-        <!-- v48: LinearLayout orientation will be toggled in Kotlin (Vertical for Parent, Horizontal for Kids) -->
+        <!-- v51: Improved visibility with vertical stacking and larger fonts -->
         <LinearLayout
             android:id="@+id/layout_accounts"
             android:layout_width="match_parent"
@@ -149,16 +149,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="채원"
-                    android:textColor="#B3FFFFFF"
-                    android:textSize="11sp"
-                    android:layout_marginBottom="1dp" />
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="2dp" />
 
                 <LinearLayout
                     android:id="@+id/layout_left_data"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="bottom">
+                    android:orientation="vertical"
+                    android:gravity="center">
 
                     <TextView
                         android:id="@+id/txt_left_amount"
@@ -166,18 +167,19 @@
                         android:layout_height="wrap_content"
                         android:text="₩ 0"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
 
                     <TextView
                         android:id="@+id/txt_left_interest"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginBottom="1dp"
                         android:text="(+0)"
                         android:textColor="#D9FFFFFF"
-                        android:textSize="9sp" />
+                        android:textSize="12sp"
+                        android:layout_marginTop="1dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -196,16 +198,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="도권"
-                    android:textColor="#B3FFFFFF"
-                    android:textSize="11sp"
-                    android:layout_marginBottom="1dp" />
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="2dp" />
 
                 <LinearLayout
                     android:id="@+id/layout_right_data"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="bottom">
+                    android:orientation="vertical"
+                    android:gravity="center">
 
                     <TextView
                         android:id="@+id/txt_right_amount"
@@ -213,18 +216,19 @@
                         android:layout_height="wrap_content"
                         android:text="₩ 0"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
 
                     <TextView
                         android:id="@+id/txt_right_interest"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginBottom="1dp"
                         android:text="(+0)"
                         android:textColor="#D9FFFFFF"
-                        android:textSize="9sp" />
+                        android:textSize="12sp"
+                        android:layout_marginTop="1dp" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
