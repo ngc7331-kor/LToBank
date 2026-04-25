@@ -11,11 +11,22 @@ import 'package:home_widget/home_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   
-  // 위젯 백그라운드 자동 동기화 시작 (앱이 켜져있을 때 실시간 반영)
+  try {
+    debugPrint("Firebase 초기화 시작...");
+    // 10초 타임아웃 추가하여 무한 대기 방지
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ).timeout(const Duration(seconds: 10), onTimeout: () {
+      debugPrint("Firebase 초기화 타임아웃 발생");
+      return Firebase.app(); // 이미 초기화 시도 중일 수 있으므로 기존 앱 반환
+    });
+    debugPrint("Firebase 초기화 완료");
+  } catch (e) {
+    debugPrint("Firebase 초기화 오류: $e");
+  }
+  
+  // 위젯 백그라운드 자동 동기화 시작
   WidgetSyncService().start();
   
   runApp(const MyApp());

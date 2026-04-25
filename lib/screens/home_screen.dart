@@ -11,6 +11,7 @@ import 'request_transaction_screen.dart';
 import 'transaction_history_screen.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -70,27 +71,17 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.05),
+              color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              tooltip: '로그아웃',
-              icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('로그아웃'),
-                    content: const Text('정말 로그아웃 하시겠습니까?'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
-                      TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('로그아웃', style: TextStyle(color: Colors.red))),
-                    ],
-                  ),
+              tooltip: '설정',
+              icon: Icon(Icons.settings_rounded, color: isDark ? Colors.white70 : const Color(0xFF64748B), size: 20),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 );
-                if (confirm == true) {
-                  await auth.signOut();
-                }
               },
             ),
           ),
