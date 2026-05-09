@@ -1,0 +1,18 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Dark Glass Background: Semi-transparent black for high contrast -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="22dp" />
+            <solid android:color="#99000000" /> <!-- Fallback -->
+            <gradient
+                android:startColor="#CC000000"
+                android:endColor="#80000000"
+                android:angle="315" />
+            
+            <!-- Subtle white border for edge definition -->
+            <stroke
+                android:width="0.5dp"
+                android:color="#33FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,44 @@
+buildscript {
+    ext.kotlin_version = '2.2.20'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.4.2'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                // ?뱀젙 ?뚮윭洹몄씤?먯꽌 namespace媛 ?놁뼱 ?ㅻ쪟 ?섎뒗 寃쎌슦 諛⑹?
+                if (namespace == null) {
+                    namespace = project.group
+                }
+                
+                // 紐⑤뱺 ?뚮윭洹몄씤??SDK 踰꾩쟾??媛뺤젣濡?怨좎젙?섏뿬 Provider ?ㅻ쪟 ?고쉶
+                compileSdk 36
+                defaultConfig {
+                    minSdkVersion 23
+                    targetSdkVersion 36
+                }
+            }
+        }
+    }
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.layout.buildDirectory
+}

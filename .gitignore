@@ -1,0 +1,28 @@
+# Flutter/Dart
+build/
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+
+# Android
+*.apk
+*.aab
+*.keystore
+*.jks
+key.properties
+local.properties
+android/app/google-services.json
+lib/firebase_options.dart
+
+# OS
+.DS_Store
+Thumbs.db
+
+# [SECURITY] Firebase options with API keys
+lib/firebase_options.dart
+
+# [SECURITY] Block secrets and backups
+assets/secrets/
+assets/assets/secrets/
+android_backup/
