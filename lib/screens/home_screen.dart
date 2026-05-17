@@ -186,12 +186,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 final dkData = dkSnapshot.data ?? BankData(name: '도권', currentBalance: 0, totalBalance: 0, interest: 0);
                 final pendingCount = pendingSnapshot.data?.length ?? 0;
 
+                // 숫자에 천 단위 쉼표 추가하는 헬퍼 함수
+                String formatNum(num n) {
+                  return n.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
+                }
+
                 // 🔄 데이터가 바뀌면 즉시 위젯도 업데이트!
                 WidgetSyncService.syncWidgetData(
-                  cwTotal: '₩ ${cwData.totalBalance}',
-                  dkTotal: '₩ ${dkData.totalBalance}',
-                  cwInterest: '이자: ₩ ${cwData.interest}',
-                  dkInterest: '이자: ₩ ${dkData.interest}',
+                  cwTotal: '₩ ${formatNum(cwData.totalBalance)}',
+                  dkTotal: '₩ ${formatNum(dkData.totalBalance)}',
+                  cwInterest: '이자: ₩ ${formatNum(cwData.interest)}',
+                  dkInterest: '이자: ₩ ${formatNum(dkData.interest)}',
                   pendingCount: pendingCount,
                 );
 

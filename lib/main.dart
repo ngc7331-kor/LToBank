@@ -21,7 +21,7 @@ void main() async {
       debugPrint("Firebase 초기화 타임아웃 발생");
       return Firebase.app(); // 이미 초기화 시도 중일 수 있으므로 기존 앱 반환
     });
-    debugPrint("Firebase 초기화 완료");
+    debugPrint("Firebase 및 HomeWidget 초기화 완료");
   } catch (e) {
     debugPrint("Firebase 초기화 오류: $e");
   }

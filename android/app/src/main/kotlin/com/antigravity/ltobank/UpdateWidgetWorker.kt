@@ -30,7 +30,7 @@ class UpdateWidgetWorker(context: Context, params: WorkerParameters) : Worker(co
             }
 
             // 📂 [우리집 세금 방식] HomeWidgetPreferences 창고 사용
-            val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+            val prefs = context.getSharedPreferences("es.antonborri.home_widget.preferences", Context.MODE_PRIVATE)
             
             val isLoggedIn = prefs.getBoolean("isLoggedIn", false)
             val userRole = prefs.getString("userRole", "") ?: ""

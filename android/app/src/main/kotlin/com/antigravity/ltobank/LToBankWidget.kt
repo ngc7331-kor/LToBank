@@ -22,7 +22,7 @@ class LToBankWidget : AppWidgetProvider() {
             
             try {
                 // 📂 [우리집 세금 방식] 공용 우체통 딱 하나만 사용 (flutter. 접두사 없음)
-                val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+                val prefs = context.getSharedPreferences("es.antonborri.home_widget.preferences", Context.MODE_PRIVATE)
 
                 // 🏷️ 열쇠 찾기 (우리집 세금과 동일하게 아주 단순화)
                 val isLoggedIn = prefs.getBoolean("isLoggedIn", false)
