@@ -184,7 +184,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 final cwData = cwSnapshot.data ?? BankData(name: '채원', currentBalance: 0, totalBalance: 0, interest: 0);
                 final dkData = dkSnapshot.data ?? BankData(name: '도권', currentBalance: 0, totalBalance: 0, interest: 0);
-                final pendingCount = pendingSnapshot.data?.length ?? 0;
+                
+                // 🔒 보안 및 역할 필터링: 부모는 전체 대기건수, 자녀는 본인 요청건수만 위젯에 표기
+                final role = auth.userRole;
+                final widgetPendingCount = _isParent 
+                    ? (pendingSnapshot.data?.length ?? 0)
+                    : (pendingSnapshot.data?.where((tx) => tx.name == role).length ?? 0);
 
                 // 숫자에 천 단위 쉼표 추가하는 헬퍼 함수
                 String formatNum(num n) {
@@ -197,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   dkTotal: '₩ ${formatNum(dkData.totalBalance)}',
                   cwInterest: '이자: ₩ ${formatNum(cwData.interest)}',
                   dkInterest: '이자: ₩ ${formatNum(dkData.interest)}',
-                  pendingCount: pendingCount,
+                  pendingCount: widgetPendingCount,
                 );
 
                 final email = _effectiveEmail ?? '';

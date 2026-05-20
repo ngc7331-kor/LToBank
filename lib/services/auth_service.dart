@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'fcm_service.dart';
+import 'widget_service.dart'; // 👈 위젯 리셋을 위해 위젯 서비스 임포트
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -10,14 +11,21 @@ class AuthService {
   );
 
   // 👤 현재 로그인한 사용자의 정보 캐싱 (메모리에 임시 저장)
-  String? _cachedRole;
-  String? _cachedName;
+  static String? _cachedRole;
+  static String? _cachedName;
 
   // 👤 사용자의 역할(Role) 가져오기
   String get userRole => _cachedRole ?? 'user';
   
   // 👤 사용자의 실명 가져오기
-  String get userRealName => _cachedName ?? (userEmail?.split('@').first ?? '사용자');
+  String get userRealName {
+    if (_cachedName != null) return _cachedName!;
+    final email = userEmail?.toLowerCase() ?? '';
+    if (email.startsWith('taeoh0311')) {
+      return '태오';
+    }
+    return email.split('@').first ?? '사용자';
+  }
 
   // 👤 UID 기반으로 DB에서 역할과 이름을 가져와 캐싱하는 함수
   Future<void> loadUserProfile() async {
@@ -61,12 +69,18 @@ class AuthService {
         
         try {
           final token = await FCMService().getToken();
-          await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          final Map<String, dynamic> updateData = {
             'email': email,
             'fcmToken': token,
             'lastLogin': FieldValue.serverTimestamp(),
-            // role은 이미 DB에 있거나 관리자가 부여함
-          }, SetOptions(merge: true));
+          };
+          if (email.startsWith('taeoh0311')) {
+            updateData['realName'] = '태오';
+          }
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
+            updateData,
+            SetOptions(merge: true),
+          );
         } catch (e) {
           print('FCM Token Save Error: $e');
         }
@@ -82,6 +96,14 @@ class AuthService {
   Future<void> signOut() async {
     _cachedRole = null;
     _cachedName = null;
+    
+    // 🛡️ [SECURITY] 로그아웃 즉시 위젯 저장소를 완전히 초기화하여 보안 이슈 예방
+    try {
+      await WidgetService.updateLogoutState();
+    } catch (e) {
+      print('Widget logout clear error: $e');
+    }
+    
     await _googleSignIn.signOut();
     await _auth.signOut();
   }

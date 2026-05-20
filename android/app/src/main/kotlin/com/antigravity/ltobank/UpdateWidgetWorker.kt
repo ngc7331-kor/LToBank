@@ -30,14 +30,25 @@ class UpdateWidgetWorker(context: Context, params: WorkerParameters) : Worker(co
             }
 
             // 📂 [우리집 세금 방식] HomeWidgetPreferences 창고 사용
-            val prefs = context.getSharedPreferences("es.antonborri.home_widget.preferences", Context.MODE_PRIVATE)
+            val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
             
             val isLoggedIn = prefs.getBoolean("isLoggedIn", false)
-            val userRole = prefs.getString("userRole", "") ?: ""
+            val userRole = (prefs.getString("userRole", "") ?: "").lowercase()
             
             if (!isLoggedIn || userRole.isEmpty()) return Result.success()
 
+            // 🔒 보안 위반 방지: 허용되지 않은 역할(user 등)은 설정 정보를 완전 파괴하고 즉각 무출력 리턴
+            if (userRole != "cw" && userRole != "dk" && userRole != "admin" && userRole != "parent") {
+                prefs.edit().clear().apply()
+                return Result.success()
+            }
+
             val isAdmin = userRole.equals("admin", ignoreCase = true) || userRole.equals("parent", ignoreCase = true)
+
+            // ⚙️ [인터넷 및 인증 유효성 체크] 수치 변동과 무관하게 항상 존재하는 환경설정 문서를 조회하여 연동 상태 검증
+            val cUrl = "https://firestore.googleapis.com/v1/projects/$proj/databases/(default)/documents/config/widget?key=$key"
+            val cRes = client.newCall(Request.Builder().url(cUrl).build()).execute()
+            val isSyncSuccessful = cRes.isSuccessful
 
             // 1️⃣ 승인 대기 건수 계산
             val pUrl = "https://firestore.googleapis.com/v1/projects/$proj/databases/(default)/documents/approvals?key=$key"
@@ -64,7 +75,11 @@ class UpdateWidgetWorker(context: Context, params: WorkerParameters) : Worker(co
                     }
                 }
                 prefs.edit().putInt("pendingCount", pCount).putString("workerStatus", "active").apply()
+            } else if (res1.code == 404 && isSyncSuccessful) {
+                // ℹ️ 다른 연동(config)은 정상이나 approvals만 404가 떴다면, 대기 요청 데이터가 비어있는 상태이므로 active로 처리
+                prefs.edit().putInt("pendingCount", 0).putString("workerStatus", "active").apply()
             } else {
+                // 실제 네트워크 끊김 또는 잘못된 인증 상태
                 prefs.edit().putString("workerStatus", "vacation").apply()
             }
 
