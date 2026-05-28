@@ -27951,7 +27951,7 @@ aBI:function aBI(a){this.a=a},
 aBJ:function aBJ(){},
 T0:function T0(a){this.a=a},
 aIk(a,b){return new A.fN(b.a,b.b,b.c,b.d,b.f,b.e,a)},
-v2(a){var s=new A.ND(a,new A.cM(null,null,t.io))
+v2(a,b){var s=new A.ND(a,b,new A.cM(null,null,t.io))
 s.yI()
 return s},
 aUy(a){var s=new A.an($.aj,t.U)
@@ -27966,9 +27966,10 @@ _.d=d
 _.e=e
 _.f=f
 _.r=g},
-ND:function ND(a,b){var _=this
-_.e=a
-_.w=b
+ND:function ND(a,b,c){var _=this
+_.d=a
+_.e=b
+_.w=c
 _.z=_.y=_.x=null},
 aap:function aap(a){this.a=a},
 aao:function aao(a){this.a=a},
@@ -29604,7 +29605,7 @@ s=q}for(;;)switch(s){case 0:q=3
 k=$.br
 j=(k==null?$.br=$.dk():k).dk("[DEFAULT]")
 A.bN(j,$.dx(),!0)
-o=new A.np(A.nG(new A.cn(j)),A.v2(u.B))
+o=new A.np(A.nG(new A.cn(j)),A.v2(u.B,u.B))
 s=6
 return A.q(A.fO("isLoggedIn",!0),$async$id)
 case 6:k=$.fH
@@ -93106,7 +93107,7 @@ return A.A($async$yI,r)},
 yF(){var s=0,r=A.B(t.H),q=this,p
 var $async$yF=A.x(function(a,b){if(a===1)return A.y(b,r)
 for(;;)switch(s){case 0:s=2
-return A.q($.Kv().we(new A.alW(B.cU,B.QA,null,null,q.e,!1)),$async$yF)
+return A.q($.Kv().we(new A.alW(B.cU,B.QA,null,q.d,q.e,!1)),$async$yF)
 case 2:p=$.Kv().ga1a()
 if(p!=null)new A.cT(new A.aao(q),p,p.$ti.i("cT<bt.T,fN?>")).ai(0,q.galp())
 return A.z(null,r)}})
@@ -93183,15 +93184,13 @@ return A.jp(A.b([s,r.a],t.mo),t.H)},
 we(a){return this.atx(a)},
 atx(a){var s=0,r=A.B(t.H),q=this,p,o,n,m,l,k,j,i
 var $async$we=A.x(function(b,c){if(b===1)return A.y(c,r)
-for(;;)switch(s){case 0:i=q.e
-i===$&&A.a()
+for(;;)switch(s){case 0:i=a.d
 q.b=new A.bm(new A.an($.aj,t.U),t.h)
 p=q.a
 p===$&&A.a()
 s=2
 return A.q(p,$async$we)
-case 2:if(q.d==null){i.toString
-p=A.fd(a.a,!0,t.N)
+case 2:if(q.d==null){p=A.fd(a.a,!0,t.N)
 o=new A.NB(!1,p,q.c)
 o.aac()
 n=A.aUN(!0,o.gaic(),!1,i,a.c,!0)
@@ -93206,8 +93205,8 @@ o.c=m.google.accounts.oauth2.initTokenClient(l)
 if(p.length!==0){j=B.b.aK(p," ")
 p=A.cN(o.gai9())
 l=A.cN(o.gai7())
-i={client_id:i,scope:j,include_granted_scopes:null,redirect_uri:null,callback:p,state:null,enable_granular_consent:null,enable_serial_consent:null,login_hint:null,hd:null,ux_mode:"popup",select_account:!0,error_callback:l}
-m.google.accounts.oauth2.initCodeClient(i)}q.d=o}q.b.dT()
+p={client_id:i,scope:j,include_granted_scopes:null,redirect_uri:null,callback:p,state:null,enable_granular_consent:null,enable_serial_consent:null,login_hint:null,hd:null,ux_mode:"popup",select_account:!0,error_callback:l}
+m.google.accounts.oauth2.initCodeClient(p)}q.d=o}q.b.dT()
 return A.z(null,r)}})
 return A.A($async$we,r)},
 ake(){$.aGg()
@@ -93643,29 +93642,29 @@ A.cr.prototype={
 tf(){var s=this,r=$.Kt().o_()
 return A.al(["date",s.b,"name",s.c,"type",s.d,"amount",s.e,"balance",s.f,"recorder",s.r,"status",s.w,"timestamp",new A.hh(r,r)],t.N,t.z)}}
 A.pE.prototype={
-ae(){var s,r,q="[DEFAULT]",p=$.br,o=(p==null?$.br=$.dk():p).dk(q)
-p=$.dx()
-A.bN(o,p,!0)
-s=A.AS(new A.cn(o))
+ae(){var s,r,q="[DEFAULT]",p=u.B,o=$.br,n=(o==null?$.br=$.dk():o).dk(q)
+o=$.dx()
+A.bN(n,o,!0)
+s=A.AS(new A.cn(n))
 r=$.br
-o=(r==null?$.br=$.dk():r).dk(q)
-A.bN(o,p,!0)
-return new A.U1(new A.uA(s),new A.np(A.nG(new A.cn(o)),A.v2(u.B)))}}
+n=(r==null?$.br=$.dk():r).dk(q)
+A.bN(n,o,!0)
+return new A.U1(new A.uA(s),new A.np(A.nG(new A.cn(n)),A.v2(p,p)))}}
 A.U1.prototype={
-I(a){var s,r,q,p,o=null,n="user",m=$.fH,l=m==null
-if((l?n:m)!=="admin")s=(l?n:m)==="parent"
+I(a){var s,r,q,p,o=null,n="user",m=u.B,l=$.fH,k=l==null
+if((k?n:l)!=="admin")s=(k?n:l)==="parent"
 else s=!0
 this.e.gMB()
-m=$.br
-r=(m==null?$.br=$.dk():m).dk("[DEFAULT]")
+l=$.br
+r=(l==null?$.br=$.dk():l).dk("[DEFAULT]")
 A.bN(r,$.dx(),!0)
 A.nG(new A.cn(r))
-A.v2(u.B)
+A.v2(m,m)
 q=$.fH
 if(q==null)q=n
 p=q==="cw"||q==="dk"?q:o
-m=s?"\uc2b9\uc778 \ub300\uae30":"\uc2b9\uc778 \uc694\uccad\uc911"
-return A.Rj(A.a2J(o,B.j,!0,0,o,o,A.aS(m,o,o,o,A.c2().$2$fontSize$fontWeight(18,B.b_),o,o,o)),B.eK,A.mz(new A.apC(this,s,p),this.d.xo(),t.Kn),o)},
+l=s?"\uc2b9\uc778 \ub300\uae30":"\uc2b9\uc778 \uc694\uccad\uc911"
+return A.Rj(A.a2J(o,B.j,!0,0,o,o,A.aS(l,o,o,o,A.c2().$2$fontSize$fontWeight(18,B.b_),o,o,o)),B.eK,A.mz(new A.apC(this,s,p),this.d.xo(),t.Kn),o)},
 a8Q(a,b){var s=null,r=a.d,q=r==="\uc785\uae08",p=a.c==="cw"?"\ucc44\uc6d0":"\ub3c4\uad8c",o=this.e.ga1b(),n=A.cj(28),m=A.b([new A.da(0,B.bk,A.ag(10,B.ap.p()>>>16&255,B.ap.p()>>>8&255,B.ap.p()&255),B.vW,20)],t.sq),l=t.p,k=A.db(A.b([A.aS("\ub0a0\uc9dc",s,s,s,A.c2().$3$color$fontSize$fontWeight(B.cL,10,B.Q),s,s,s),A.aS(a.b,s,s,s,A.c2().$3$color$fontSize$fontWeight(B.bZ,18,B.aw),s,s,s)],l),B.ad,B.u,B.z),j=q?B.nP:B.jT,i=A.cj(12)
 r=A.b([A.dF(A.b([k,A.dN(s,A.aS(r,s,s,s,A.c2().$3$color$fontSize$fontWeight(q?B.nY:B.jF,13,B.b_),s,s,s),B.r,s,new A.ck(j,s,s,i,s,s,B.a2),s,s,s,B.GM,s,s,s)],l),B.N,B.hW,B.z,s),B.m_,A.dF(A.b([A.hT(B.HK,B.nG,s,18),B.RL,A.aS("\uc2e0\uccad\uc790: ",s,s,s,A.c2().$3$color$fontSize$fontWeight(B.dD,14,B.Q),s,s,s),A.aS(o,s,s,s,A.c2().$3$color$fontSize$fontWeight(B.ap,16,B.bn),s,s,s)],l),B.N,B.u,B.z,s),B.ef,A.aS(p+" \uacc4\uc88c \uc694\uccad",s,s,s,A.c2().$3$color$fontSize$fontWeight(B.cL,14,B.cR),s,s,s),B.m0,A.aS("\u20a9"+A.nf(B.f.k(a.e),A.c_("(\\d{1,3})(?=(\\d{3})+(?!\\d))",!0,!1),new A.apo(),s)+"\uc6d0",s,s,s,A.pv().$4$color$fontSize$fontWeight$letterSpacing(B.bZ,34,B.b_,-0.5),s,s,s),B.AB],l)
 if(b)r.push(this.a94(a))
@@ -93774,19 +93773,19 @@ return A.z(null,r)}})
 return A.A($async$$0,r)},
 $S:6}
 A.Bf.prototype={
-ae(){var s,r,q,p,o="[DEFAULT]",n=$.br,m=(n==null?$.br=$.dk():n).dk(o)
-n=$.dx()
-A.bN(m,n,!0)
-s=A.AS(new A.cn(m))
+ae(){var s,r,q,p,o="[DEFAULT]",n=u.B,m=$.br,l=(m==null?$.br=$.dk():m).dk(o)
+m=$.dx()
+A.bN(l,m,!0)
+s=A.AS(new A.cn(l))
 r=$.br
-m=(r==null?$.br=$.dk():r).dk(o)
-A.bN(m,n,!0)
-r=A.nG(new A.cn(m))
-q=A.v2(u.B)
+l=(r==null?$.br=$.dk():r).dk(o)
+A.bN(l,m,!0)
+r=A.nG(new A.cn(l))
+q=A.v2(n,n)
 p=$.br
-m=(p==null?$.br=$.dk():p).dk(o)
-A.bN(m,n,!0)
-return new A.Wq(new A.uA(s),new A.np(r,q),A.nG(new A.cn(m)).gn0())}}
+l=(p==null?$.br=$.dk():p).dk(o)
+A.bN(l,m,!0)
+return new A.Wq(new A.uA(s),new A.np(r,q),A.nG(new A.cn(l)).gn0())}}
 A.Wq.prototype={
 ar(){this.aR()
 this.z3()},
@@ -93848,7 +93847,7 @@ for(;;)switch(s){case 0:q=$.br
 p=(q==null?$.br=$.dk():q).dk("[DEFAULT]")
 A.bN(p,$.dx(),!0)
 s=2
-return A.q(new A.np(A.nG(new A.cn(p)),A.v2(u.B)).cp(),$async$$0)
+return A.q(new A.np(A.nG(new A.cn(p)),A.v2(u.B,u.B)).cp(),$async$$0)
 case 2:return A.z(null,r)}})
 return A.A($async$$0,r)},
 $S:6}
@@ -94043,7 +94042,7 @@ k=$.br
 j=(k==null?$.br=$.dk():k).dk("[DEFAULT]")
 A.bN(j,$.dx(),!0)
 s=6
-return A.q(new A.np(A.nG(new A.cn(j)),A.v2(u.B)).lj(),$async$yX)
+return A.q(new A.np(A.nG(new A.cn(j)),A.v2(u.B,u.B)).lj(),$async$yX)
 case 6:m=b
 if(m==null&&n.c!=null)n.c.ag(t.Pu).f.xN(B.S0)
 o.push(5)
@@ -94092,14 +94091,14 @@ A.av_.prototype={
 $0(){},
 $S:0}
 A.ow.prototype={
-ae(){var s,r,q="[DEFAULT]",p=$.br,o=(p==null?$.br=$.dk():p).dk(q)
-p=$.dx()
-A.bN(o,p,!0)
-s=A.AS(new A.cn(o))
+ae(){var s,r,q="[DEFAULT]",p=u.B,o=$.br,n=(o==null?$.br=$.dk():o).dk(q)
+o=$.dx()
+A.bN(n,o,!0)
+s=A.AS(new A.cn(n))
 r=$.br
-o=(r==null?$.br=$.dk():r).dk(q)
-A.bN(o,p,!0)
-return new A.Il(new A.uA(s),new A.np(A.nG(new A.cn(o)),A.v2(u.B)),new A.c9(Date.now(),0,!1))}}
+n=(r==null?$.br=$.dk():r).dk(q)
+A.bN(n,o,!0)
+return new A.Il(new A.uA(s),new A.np(A.nG(new A.cn(n)),A.v2(p,p)),new A.c9(Date.now(),0,!1))}}
 A.Il.prototype={
 ar(){var s,r,q,p,o=this
 o.aR()

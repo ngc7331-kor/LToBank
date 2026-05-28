@@ -7,6 +7,7 @@ import 'widget_service.dart'; // 👈 위젯 리셋을 위해 위젯 서비스 �
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: '35323267785-oqueflp0he6ot8jphtq8dqobpt6k2hp7.apps.googleusercontent.com',
     serverClientId: '35323267785-oqueflp0he6ot8jphtq8dqobpt6k2hp7.apps.googleusercontent.com',
   );
 
